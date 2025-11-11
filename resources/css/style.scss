@@ -1,0 +1,48 @@
+:root {
+  --primary-color: #002e9c;
+  --sub-primary-color: #00239b;
+  --footer-background-color: #072385;
+  --secondary-color: #ed1e79;
+  --black-title: #141414;
+  --black-text: #191d21;
+  --black-text-2: #121213;
+  --inactive-text: #646c72;
+  --light-grey-text: #627a95;
+  --grey-background: #fafafa;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+.font-dvn {
+  font-family: "DVN-Brand", sans-serif;
+}
+
+.font-quicksand {
+  font-family: "Quicksand", sans-serif;
+}
+
+@keyframes bounce-text {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-bounce-text {
+  animation: bounce-text 1.2s ease-in-out infinite;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: white;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
