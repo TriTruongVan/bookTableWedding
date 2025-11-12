@@ -28,14 +28,10 @@ export const getCurrentUser = () => {
   const token = localStorage.getItem('token')
   if (!token) return null
 
-  try {
-    const payload = token.split('.')[1]
-    const decodedPayload = JSON.parse(atob(payload))
-    currentUser = decodedPayload
-    return currentUser
-  } catch (error) {
-    return null
-  }
+  const payload = token.split('.')[1]
+  const decodedPayload = JSON.parse(atob(payload))
+  currentUser = decodedPayload
+  return currentUser
 }
 
 export const isAuthenticated = () => {
