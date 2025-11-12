@@ -15,4 +15,4 @@ return [
     'confirmPasswordString' => 'Xác nhận mật khẩu phải là một chuỗi hợp lệ.',
     'confirmPasswordMin' => 'Xác nhận mật khẩu phải có ít nhất 6 ký tự.',
     'confirmPasswordSame' => 'Mật khẩu xác nhận không khớp.',
-]
+];
