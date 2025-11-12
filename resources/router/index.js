@@ -10,12 +10,14 @@ const router = createRouter({
         {
             path: '/login',
             name: 'Login',
-            component: () => import('../js/pages/Login.vue')
+            component: () => import('../js/pages/Login.vue'),
+            meta: { requiresGuest: true }
         },
         {
             path: '/dashboard',
             name: 'Dashboard',
-            component: () => import('../js/pages/dashboard/Index.vue')
+            component: () => import('../js/pages/dashboard/Index.vue'),
+            meta: { requiresAuth: true }
         },
 
     ]

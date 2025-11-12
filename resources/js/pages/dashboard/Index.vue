@@ -1,6 +1,6 @@
 <template>
     <div>
-        Đây là trang dashboard ajkdhsfads
+        Đây là trang dashboard
     </div>
 </template>
 <script> 

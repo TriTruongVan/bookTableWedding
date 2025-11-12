@@ -21,8 +21,8 @@ const handleLogin = async () => {
   try {
     const resp = await login(tel.value, password.value)
     if (resp.data.status === 'OK') {
-      const user = getCurrentUser()
-      if (user?.role === USER_ROLES.REPORT_VIEWER) {
+      const currentUser = await getCurrentUser()
+      if (currentUser?.role == USER_ROLES.REPORT_VIEWER) {
         router.push('/reports')
       } else {
         router.push('/dashboard')
