@@ -19,7 +19,18 @@ const router = createRouter({
             component: () => import('../js/pages/dashboard/Index.vue'),
             meta: { requiresAuth: true }
         },
-
+        {
+            path: '/customer',
+            name: 'Customer',
+            component: () => import('../js/pages/customer/Index.vue'),
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/customer/create',
+            name: 'CustomerCreate',
+            component: () => import('../js/pages/customer/Create.vue'),
+            meta: { requiresAuth: true }
+        },
     ]
 })
 export default router;
