@@ -16,10 +16,14 @@ const userMenuRef = ref()
 const sidebarHovered = ref(false)
 
 const menuItems = [
-  { label: 'Dashboard', icon: 'heroicons:home', route: '/dashboard' },
+  { label: 'Bảng điều khiển', icon: 'heroicons:home', route: '/dashboard' },
+  { label: 'Khách hàng', icon: 'heroicons:user', route: '/customer' },
 ]
 const filteredMenuItems = computed(() =>{
-  const showForSale = ['Dashboard']
+  const showForSale = [
+    'Dashboard',
+    'Customer'
+  ]
   const showForReportViewer = [
     'Reports',
   ]
