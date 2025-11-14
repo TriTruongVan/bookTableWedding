@@ -7,7 +7,7 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Paginator from 'primevue/paginator';
 import { onMounted, ref } from "vue";
-import { getAllCustomers } from "../../../services/customerService";
+import { getAllCustomers, getCustomersByTelOrName } from "../../../services/customerService";
 import { useToast } from "primevue/usetoast";
 
 const meta = ref()
@@ -20,6 +20,8 @@ const loading = ref(false)
 const sortField = ref("created_at")
 const sortOrder = ref("desc")
 const customers = ref([{name:"", tel:"", ward: 0, street: ""}])
+const filteredCustomers = ref([])
+const currentQuery = ref("")
 
 onMounted(async () => {
   await loadCustomers()
@@ -28,6 +30,8 @@ onMounted(async () => {
 const onPageChange = (event:any) => {
   page.value = event.page + 1
   rows.value = event.rows
+
+  loadCustomers()
 }
 
 const getRoleLabel = (role: number) => {
@@ -93,6 +97,36 @@ const onSort = (event: any) => {
   page.value = 1
   loadCustomers()
 }
+
+const searchCustomers = async  (event: any) => {
+  const query = event.query
+  currentQuery.value = query
+  if (query.length >= 2) {
+    const searchResults = ( await getCustomersByTelOrName(query)).data.data.items
+    filteredCustomers.value = searchResults.slice(0, 10)
+  }
+}
+
+const isPhoneNumber = (query: string) => {
+  const digitCount = (query.match(/\d/g) || []).length
+  return digitCount >= query.length * 0.7
+}
+
+const getOptionLabel = (option: any) => {
+  return isPhoneNumber(currentQuery.value) ? option.tel : option.name
+}
+
+const onCustomerSelect = (selectedCustomer: any) => {
+  const filterCustomer = customers.value.filter((cus) => {
+    return cus.tel === selectedCustomer.value.tel
+  })
+  customers.value = filterCustomer
+}
+
+const editCustomer = (event: any) => {
+  const customerId = event.data.id
+  router.push({ name: "CustomerDetail", params: { id: customerId } })
+}
 </script>
 <template>
   <div
@@ -113,13 +147,28 @@ const onSort = (event: any) => {
     <Card class="mt-4 !shadow-lg">
       <template #content>
         <AutoComplete
-          v-model="value"
-          fluid
-          :suggestions="items"
-          @complete="search"
+          :suggestions="filteredCustomers"
+          :option-label="getOptionLabel"
+          @complete="searchCustomers"
+          @clear="loadCustomers"
           class="w-full mb-4"
-          placeholder="Tìm kiếm theo tên, Email hoặc số điện thoại..."
+          input-class="w-full"
+          placeholder=" 🔍 Tìm kiếm theo tên, Email hoặc số điện thoại..."
+          @item-select="onCustomerSelect"
         >
+          <template #option="{ option }">
+            <div class="p-2">
+              <div class="font-medium text-gray-900 dark:text-white">
+                {{ option.name }}
+              </div>
+              <div class="text-sm text-gray-600 dark:text-gray-300">
+                {{ option.tel }}
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {{ option.address }}
+              </div>
+            </div>
+          </template>
         </AutoComplete>
         <DataTable
           :value="customers"
@@ -132,6 +181,7 @@ const onSort = (event: any) => {
           :sort-order="sortOrder === 'asc' ? 1 : sortOrder === 'desc' ? -1 : 0"
           :removable-sort="true"
           @sort="onSort"
+          @row-click="editCustomer"
         >
           <Column
             field="name"
