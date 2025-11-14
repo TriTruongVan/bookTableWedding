@@ -31,6 +31,12 @@ const router = createRouter({
             component: () => import('../js/pages/customer/Create.vue'),
             meta: { requiresAuth: true }
         },
+        {
+            path: '/customer/:id',
+            name: 'CustomerDetail',
+            component: () => import('../js/pages/customer/Detail.vue'),
+            meta: { requiresAuth: true }
+        },
     ]
 })
 export default router;

@@ -1,34 +1,31 @@
-<script setup>
-import Card from 'primevue/card'
-import InputText from 'primevue/inputtext'
-import Dropdown from 'primevue/dropdown'
-import { useRouter } from 'vue-router'
-import { onMounted, ref } from 'vue'
-import { useToast } from 'primevue/usetoast'
-import { create } from '../../../services/customerService'
+<script setup lang="ts">
+import Card from 'primevue/card';
+import Dropdown from 'primevue/dropdown';
+import InputText from 'primevue/inputtext';
+import { useToast } from 'primevue/usetoast';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { getCustomerById, updateCustomer } from "../../../services/customerService"; 
 import { getAllWards } from '../../../services/userService'
 
 const router = useRouter()
+const route = useRoute();
 const loading = ref(false)
 const toast = useToast()
 const wardsList = ref([])
-
 const customer = ref({
   name: '',
-  street: '',
-  ward: 0,
   tel: '',
-  role: 0,
+  street: '',
+  ward: null,
+  role: null,
 })
 
-onMounted(async() => {
+onMounted(async () => {
+  await loadCustomer()
   await loadWards()
 })
 
-const roleList = ref([
-  { id: 0, label: 'Cá nhân'},
-  { id: 1, label: 'Doanh nghiệp'}
-])
 const loadWards = async () => {
   loading.value = true
   try {
@@ -53,26 +50,55 @@ const loadWards = async () => {
     loading.value = false
   }
 }
+const roleList = ref([
+  { id: 0, label: 'Cá nhân'},
+  { id: 1, label: 'Doanh nghiệp'}
+])
 
-const handleCreate = async () =>{
+const handleSubmit = async () => {
   loading.value = true
-  try{
-    await create(customer.value)
+  try {
+    await updateCustomer(route.params.id, customer.value)
     toast.add({
       severity: 'success',
-      summary: 'Thành công',
-      detail: 'Tạo khách hàng thành công',
+      summary: 'Success',
+      detail: 'Cập nhật khách hàng thành công',
       life: 3000
     })
+
     router.push('/customer')
-  } catch (error) {
-    console.log('====================================');
+  } catch (error: any) {
     console.log(error);
-    console.log('====================================');
     toast.add({
       severity: 'error',
-      summary: t('Error'),
-      detail: error.response?.data?.message || 'Có lỗi xảy ra',
+      summary: 'Error',
+      detail: 'Cập nhật khách hàng thất bại',
+      life: 3000
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadCustomer = async () => {
+  loading.value = true
+  try {
+    const response = await getCustomerById(route.params.id)
+    customer.value = response.data.data || customer.value
+    if (!customer.value) {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'CustomerNotFound',
+        life: 3000
+      })
+      router.push('/customer')
+    }
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'FailedToLoadCustomerDetails',
       life: 3000
     })
   } finally {
@@ -93,7 +119,7 @@ const handleCreate = async () =>{
         <i class="pi pi-arrow-left text-gray-600 dark:text-gray-300 text-lg"></i>
       </button>
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-        Tạo khách hàng
+        Cập nhật thông tin khách hàng
       </h1>
     </div>
 
@@ -106,7 +132,7 @@ const handleCreate = async () =>{
             <template #content>
               <form
                 class="space-y-8"
-                @submit.prevent="handleCreate"
+                @submit.prevent="handleSubmit"
               >
                 <!-- Thông tin khách hàng -->
                 <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl">
@@ -121,8 +147,8 @@ const handleCreate = async () =>{
                         Họ và tên <span class="text-red-500">*</span>
                       </label>
                       <InputText
-                        v-model="customer.name"
                         id="name"
+                        v-model="customer.name"
                         type="text"
                         placeholder="Nhập họ và tên"
                         class="w-full"
@@ -138,8 +164,8 @@ const handleCreate = async () =>{
                         Đường <span class="text-red-500">*</span>
                       </label>
                       <InputText
-                        v-model="customer.street"
                         id="street"
+                        v-model="customer.street"
                         type="text"
                         placeholder="Nhập tên đường"
                         class="w-full"
@@ -197,7 +223,7 @@ const handleCreate = async () =>{
                     type="submit"
                     class="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-lg hover:opacity-90 transition-opacity"
                   >
-                    Tạo khách hàng
+                    Cập nhật khách hàng
                   </button>
                 </div>
               </form>
@@ -212,9 +238,8 @@ const handleCreate = async () =>{
               Hướng dẫn
             </h4>
             <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-2">
-              <li>• Nhập đầy đủ thông tin có dấu *</li>
-              <li>• Số điện thoại phải là 10 chữ số</li>
-              <li>• Hệ khách hàng: Cá nhân / Doanh nghiệp</li>
+                <li>• Kiểm tra lại địa chỉ trước khi cập nhật</li>
+                <li>• Nhấn “Cập nhật khách hàng” để lưu thông tin</li>
             </ul>
           </div>
         </div>
