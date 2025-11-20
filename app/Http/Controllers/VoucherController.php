@@ -27,7 +27,8 @@ class VoucherController extends Controller
         $query = Voucher::withCount(['orders as usageCount'])
             ->where('code', 'LIKE', "%$search%")
             ->orWhere('name', 'LIKE', "%$search%")
-            ->orWhere('description', 'LIKE', "%$search%");
+            ->orWhere('description', 'LIKE', "%$search%")
+            ->orWhere('conditions', 'LIKE', "%$search%");
 
         if (in_array($request->is_active, [VoucherStatus::ACTIVE->value, VoucherStatus::INACTIVE->value])) {
             $query->where('is_active', $request->is_active);
