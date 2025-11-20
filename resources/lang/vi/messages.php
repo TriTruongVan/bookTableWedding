@@ -32,4 +32,13 @@ return [
     'roleNumeric' => 'Vai trò phải là một số.',
     'wardNumeric' => 'Phường phải là một số.',
     'roleIn' => 'Vai trò không hợp lệ. Vui lòng chọn một vai trò hợp lệ.',
+    'codeRequest' => 'Mã voucher không được để trống.',
+    'codeUnique' => 'Mã voucher đã tồn tại.',
+    'conditionsRequired' => 'Điều kiện voucher không được để trống.',
+    'conditionsMinTableRequired' => 'Số bàn tối thiểu là bắt buộc.',
+    'conditionsMinTableInteger' => 'Số bàn tối thiểu phải là số.',
+    'conditionsMinTableMin' => 'Số bàn tối thiểu phải lớn hơn 0.',
+    'isActiveRequired' => 'Trạng thái voucher là bắt buộc.',
+    'isActiveIn' => 'Giá trị trạng thái không hợp lệ.',
+    'codeRegex' => 'Mã voucher chỉ được chứa chữ HOA, số và dấu gạch dưới (nếu có). Không khoảng trắng hoặc ký tự đặc biệt!',
 ];

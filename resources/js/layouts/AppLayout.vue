@@ -18,12 +18,9 @@ const sidebarHovered = ref(false)
 const menuItems = [
   { label: 'Bảng điều khiển', icon: 'heroicons:home', route: '/dashboard' },
   { label: 'Khách hàng', icon: 'heroicons:user', route: '/customer' },
+  { label: 'Voucher', icon: 'heroicons:receipt-percent', route: '/voucher' },
 ]
 const filteredMenuItems = computed(() =>{
-  const showForSale = [
-    'Dashboard',
-    'Customer'
-  ]
   const showForReportViewer = [
     'Reports',
   ]
