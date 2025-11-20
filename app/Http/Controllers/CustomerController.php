@@ -109,7 +109,7 @@ class CustomerController extends Controller
             return $this->okRes();
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Update Service Error:', ['exception' => $th->getMessage()]);
+            Log::error('Update Customer Error:', ['exception' => $th->getMessage()]);
             return $this->badRequestRes();
         }
     }

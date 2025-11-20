@@ -2,51 +2,53 @@
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
 import Dropdown from 'primevue/dropdown'
-import { useRouter } from 'vue-router'
+import Textarea from 'primevue/textarea'
+import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { useToast } from 'primevue/usetoast'
-import { create } from '../../../services/customerService'
-import { getAllWards } from '../../../services/userService'
+import { getVoucherById, updateVoucher } from '../../../services/voucherService'
+import InputNumber from 'primevue/inputnumber'
 
 const router = useRouter()
 const loading = ref(false)
 const toast = useToast()
-const wardsList = ref([])
+const route = useRoute();
 
-const customer = ref({
+const voucher = ref({
+  code: '',
   name: '',
-  street: '',
-  ward: 0,
-  tel: '',
-  role: 0,
+  conditions: {
+    min_tables: null
+  },
+  description: '',
+  is_active: null,
 })
 
-onMounted(async() => {
-  await loadWards()
+onMounted(async () =>{
+  await loadVoucher()
 })
 
-const roleList = ref([
-  { id: 0, label: 'Cá nhân'},
-  { id: 1, label: 'Doanh nghiệp'}
+const statusList = ref([
+  { id: 0, label: 'Không hoạt động' },
+  { id: 1, label: 'Hoạt động' }
 ])
-const loadWards = async () => {
+
+const handleUpdate = async () => {
   loading.value = true
   try {
-    wardsList.value = (await getAllWards()).data.data.wards
-    if (!wardsList.value) {
-      toast.add({
-        severity: 'error',
-        summary: 'Thành công',
-        detail: 'Cập nhật thành công',
-        life: 3000
-      })
-      return
-    }
+    await updateVoucher(route.params.id, voucher.value)
+    toast.add({
+      severity: 'success',
+      summary: 'Thành công',
+      detail: 'Cập nhật voucher thành công',
+      life: 3000
+    })
+    router.push('/voucher')
   } catch (error) {
     toast.add({
       severity: 'error',
       summary: 'Lỗi',
-      detail: 'Cập nhật địa chỉ thất bại',
+      detail: error.response?.data?.message || 'Có lỗi xảy ra',
       life: 3000
     })
   } finally {
@@ -54,22 +56,25 @@ const loadWards = async () => {
   }
 }
 
-const handleCreate = async () =>{
+const loadVoucher = async () =>{
   loading.value = true
-  try{
-    await create(customer.value)
-    toast.add({
-      severity: 'success',
-      summary: 'Thành công',
-      detail: 'Tạo khách hàng thành công',
-      life: 3000
-    })
-    router.push('/customer')
+  try {
+    const resp = await getVoucherById(route.params.id)
+    voucher.value = resp.data.data || voucher.value
+    if(!voucher.value) {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Không tìm thấy khách hàng',
+        life: 3000
+      })
+      router.push('/voucher')
+    }
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Lỗi',
-      detail: error.response?.data?.message || 'Có lỗi xảy ra',
+      summary: 'Error',
+      detail: 'Tải thông tin khách hàng thất bại',
       life: 3000
     })
   } finally {
@@ -85,7 +90,7 @@ const handleCreate = async () =>{
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 mb-6">
         <div class="flex items-center gap-4">
           <button
-            @click="router.push('/customer')"
+            @click="router.push('/voucher')"
             class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
             aria-label="Quay lại"
           >
@@ -94,14 +99,14 @@ const handleCreate = async () =>{
           
           <div class="flex items-center gap-3 flex-1">
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-              <i class="pi pi-user-plus text-white text-xl"></i>
+              <i class="pi pi-gift text-white text-xl"></i>
             </div>
             <div>
               <h1 class="font-bold text-3xl bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
-                Tạo Khách hàng Mới
+                Cập nhật Voucher
               </h1>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Nhập thông tin khách hàng mới vào hệ thống
+                Cập nhật thông tin voucher vào hệ thống
               </p>
             </div>
           </div>
@@ -121,7 +126,7 @@ const handleCreate = async () =>{
                 </div>
                 <div>
                   <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    Thông tin Khách hàng
+                    Thông tin Voucher
                   </h2>
                   <p class="text-sm text-gray-500 dark:text-gray-400">
                     Điền đầy đủ thông tin bên dưới
@@ -131,100 +136,99 @@ const handleCreate = async () =>{
             </div>
 
             <!-- Form Content -->
-            <form @submit.prevent="handleCreate" class="p-8">
+            <form @submit.prevent="handleUpdate" class="p-8">
               <div class="space-y-8">
-                <!-- Họ và tên - Full Width -->
-                <div class="space-y-2">
-                  <label for="name" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                      <i class="pi pi-user text-emerald-600 dark:text-emerald-400 text-xs"></i>
-                    </div>
-                    <span>Họ và tên</span>
-                    <span class="text-red-500">*</span>
-                  </label>
-                  <InputText
-                    v-model="customer.name"
-                    id="name"
-                    type="text"
-                    placeholder="Nhập họ và tên đầy đủ"
-                    class="w-full !py-3 !px-4 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm"
-                  />
-                </div>
-
                 <!-- Grid 2 cột -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <!-- Đường -->
+                  <!-- Mã Voucher -->
                   <div class="space-y-2">
-                    <label for="street" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      <div class="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                        <i class="pi pi-map-marker text-orange-600 dark:text-orange-400 text-xs"></i>
-                      </div>
-                      <span>Đường</span>
-                      <span class="text-red-500">*</span>
-                    </label>
-                    <InputText
-                      v-model="customer.street"
-                      id="street"
-                      type="text"
-                      placeholder="Nhập tên đường"
-                      class="w-full !py-3 !px-4 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm"
-                    />
-                  </div>
-
-                  <!-- Xã / Phường -->
-                  <div class="space-y-2">
-                    <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <label for="code" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                       <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                        <i class="pi pi-building text-blue-600 dark:text-blue-400 text-xs"></i>
+                        <i class="pi pi-tag text-blue-600 dark:text-blue-400 text-xs"></i>
                       </div>
-                      <span>Xã / Phường</span>
-                      <span class="text-red-500">*</span>
-                    </label>
-                    <Dropdown
-                      v-model="customer.ward"
-                      :options="wardsList"
-                      placeholder="Chọn xã / phường"
-                      option-label="label"
-                      option-value="id"
-                      class="w-full custom-dropdown"
-                    />
-                  </div>
-
-                  <!-- Số điện thoại -->
-                  <div class="space-y-2">
-                    <label for="tel" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <i class="pi pi-phone text-green-600 dark:text-green-400 text-xs"></i>
-                      </div>
-                      <span>Số điện thoại</span>
+                      <span>Mã Voucher</span>
                       <span class="text-red-500">*</span>
                     </label>
                     <InputText
-                      v-model="customer.tel"
-                      id="tel"
+                      v-model="voucher.code"
+                      id="code"
                       type="text"
-                      placeholder="Nhập số điện thoại (10 số)"
+                      placeholder="VD: BACKDROP, TABLE_GIFT"
                       class="w-full !py-3 !px-4 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm"
                     />
                   </div>
 
-                  <!-- Hệ khách hàng -->
+                  <!-- Trạng thái -->
                   <div class="space-y-2">
                     <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                        <i class="pi pi-users text-purple-600 dark:text-purple-400 text-xs"></i>
+                      <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <i class="pi pi-check-circle text-green-600 dark:text-green-400 text-xs"></i>
                       </div>
-                      <span>Hệ khách hàng</span>
+                      <span>Trạng thái</span>
                       <span class="text-red-500">*</span>
                     </label>
                     <Dropdown
-                      v-model="customer.role"
-                      :options="roleList"
-                      placeholder="Chọn hệ khách hàng"
-                      class="w-full custom-dropdown"
+                      v-model="voucher.is_active"
+                      :options="statusList"
+                      placeholder="Chọn trạng thái"
                       option-label="label"
                       option-value="id"
-                      :required="true"
+                      class="w-full custom-dropdown"
+                    />
+                  </div>
+
+                  <!-- Tên Voucher -->
+                  <div class="space-y-2 md:col-span-2">
+                    <label for="name" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                        <i class="pi pi-bookmark text-purple-600 dark:text-purple-400 text-xs"></i>
+                      </div>
+                      <span>Tên Voucher</span>
+                      <span class="text-red-500">*</span>
+                    </label>
+                    <InputText
+                      v-model="voucher.name"
+                      id="name"
+                      type="text"
+                      placeholder="VD: Backdrop chụp hình, Tặng 1 bàn tiệc"
+                      class="w-full !py-3 !px-4 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm"
+                    />
+                  </div>
+
+                  <!-- Điều kiện -->
+                  <div class="space-y-2 md:col-span-2">
+                    <label for="condition" class="flex items-center gap-2 text-sm foncreatet-semibold text-gray-700 dark:text-gray-300">
+                      <div class="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                        <i class="pi pi-list text-orange-600 dark:text-orange-400 text-xs"></i>
+                      </div>
+                      <span>Điều kiện</span>
+                      <span class="text-red-500">*</span>
+                    </label>
+                    <InputNumber
+                      v-model="voucher.conditions.min_tables"
+                      :min="1"
+                      id="condition"
+                      type="text"
+                      placeholder="VD: nhập số 50, 60"
+                      class="w-full !py-3 !px-4 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm"
+                    />
+                  </div>
+
+                  <!-- Mô tả -->
+                  <div class="space-y-2 md:col-span-2">
+                    <label for="description" class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      <div class="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                        <i class="pi pi-align-left text-teal-600 dark:text-teal-400 text-xs"></i>
+                      </div>
+                      <span>Mô tả</span>
+                      <span class="text-red-500">*</span>
+                    </label>
+                    <Textarea
+                      v-model="voucher.description"
+                      id="description"
+                      rows="4"
+                      placeholder="VD: Voucher tặng backdrop tiệc cưới, sinh nhật, sự kiện..."
+                      class="w-full !py-3 !px-4 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm resize-none"
                     />
                   </div>
                 </div>
@@ -233,7 +237,7 @@ const handleCreate = async () =>{
                 <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <button
                     type="button"
-                    @click="router.push('/customer')"
+                    @click="router.push('/voucher')"
                     class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm hover:shadow-md"
                   >
                     <i class="pi pi-times mr-2"></i>
@@ -245,7 +249,7 @@ const handleCreate = async () =>{
                     class="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <i class="pi pi-check mr-2"></i>
-                    {{ loading ? 'Đang tạo...' : 'Tạo khách hàng' }}
+                    {{ loading ? 'Đang tạo...' : 'Cập nhật voucher' }}
                   </button>
                 </div>
               </div>
@@ -282,7 +286,7 @@ const handleCreate = async () =>{
                     <i class="pi pi-check text-green-600 dark:text-green-400 text-xs"></i>
                   </div>
                   <span class="text-sm text-gray-700 dark:text-gray-300">
-                    Số điện thoại phải đủ <span class="font-semibold">10 chữ số</span>
+                    Mã voucher phải là <span class="font-semibold">duy nhất</span>
                   </span>
                 </li>
                 <li class="flex items-start gap-3">
@@ -290,7 +294,7 @@ const handleCreate = async () =>{
                     <i class="pi pi-check text-purple-600 dark:text-purple-400 text-xs"></i>
                   </div>
                   <span class="text-sm text-gray-700 dark:text-gray-300">
-                    Hệ khách hàng: <span class="font-semibold">Cá nhân</span> hoặc <span class="font-semibold">Doanh nghiệp</span>
+                    Điều kiện áp dụng voucher cần rõ ràng
                   </span>
                 </li>
                 <li class="flex items-start gap-3">
@@ -298,10 +302,44 @@ const handleCreate = async () =>{
                     <i class="pi pi-check text-orange-600 dark:text-orange-400 text-xs"></i>
                   </div>
                   <span class="text-sm text-gray-700 dark:text-gray-300">
-                    Địa chỉ bao gồm tên đường và xã/phường
+                    Mô tả chi tiết để khách hàng dễ hiểu
+                  </span>
+                </li>
+                <li class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <i class="pi pi-check text-purple-600 dark:text-purple-400 text-xs"></i>
+                  </div>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">
+                    Voucher chỉ cần nhập số
                   </span>
                 </li>
               </ul>
+            </div>
+          </div>
+
+          <!-- Voucher Examples Card -->
+<div class="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl shadow-xl p-6 text-white">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <i class="pi pi-user text-white"></i>
+              </div>
+              <h3 class="font-semibold">Thông tin hiện tại</h3>
+            </div>
+            <div class="space-y-3">
+              <div class="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                <div class="text-xs opacity-80 mb-1">Mã voucher</div>
+                <div class="font-semibold truncate">{{ voucher.code || '-' }}</div>
+              </div>
+              <div class="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                <div class="text-xs opacity-80 mb-1">Tên voucher</div>
+                <div class="font-semibold font-mono">{{ voucher.name || '-' }}</div>
+              </div>
+              <div class="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                <div class="text-xs opacity-80 mb-1">Mô tả</div>
+                <div class="font-semibold">
+                  {{ voucher.description || '-'}}
+                </div>
+              </div>
             </div>
           </div>
         </div>

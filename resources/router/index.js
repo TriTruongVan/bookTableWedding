@@ -37,6 +37,24 @@ const router = createRouter({
             component: () => import('../js/pages/customer/Detail.vue'),
             meta: { requiresAuth: true }
         },
+        {
+            path: '/voucher',
+            name: 'Voucher',
+            component: () => import('../js/pages/voucher/Index.vue'),
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/voucher/create',
+            name: 'VoucherCreate',
+            component: () => import('../js/pages/voucher/Create.vue'),
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/voucher/:id',
+            name: 'VoucherDetail',
+            component: () => import('../js/pages/voucher/Detail.vue'),
+            meta: { requiresAuth: true }
+        },
     ]
 })
 export default router;
