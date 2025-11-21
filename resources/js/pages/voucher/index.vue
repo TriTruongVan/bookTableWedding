@@ -142,7 +142,7 @@ const editVoucher = (event: any) => {
         <!-- Search Bar with Modern Design -->
         <div class="mt-6">
           <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
               <i class="pi pi-search text-gray-400"></i>
             </div>
             <AutoComplete

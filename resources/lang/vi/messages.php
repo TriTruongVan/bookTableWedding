@@ -41,4 +41,5 @@ return [
     'isActiveRequired' => 'Trạng thái voucher là bắt buộc.',
     'isActiveIn' => 'Giá trị trạng thái không hợp lệ.',
     'codeRegex' => 'Mã voucher chỉ được chứa chữ HOA, số và dấu gạch dưới (nếu có). Không khoảng trắng hoặc ký tự đặc biệt!',
+    'statusRequired' => 'Vui lòng chọn loại nhân viên',
 ];

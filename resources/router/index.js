@@ -55,6 +55,24 @@ const router = createRouter({
             component: () => import('../js/pages/voucher/Detail.vue'),
             meta: { requiresAuth: true }
         },
+        {
+            path: '/staff',
+            name: 'Staff',
+            component: () => import('../js/pages/staff/Index.vue'),
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/staff/create',
+            name: 'StaffCreate',
+            component: () => import('../js/pages/staff/Create.vue'),
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/staff/:id',
+            name: 'StaffDetail',
+            component: () => import('../js/pages/staff/Detail.vue'),
+            meta: { requiresAuth: true }
+        },
     ]
 })
 export default router;
