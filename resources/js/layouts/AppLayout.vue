@@ -3,7 +3,7 @@ import Button from "primevue/button";
 import { useRoute, useRouter } from "vue-router";
 import Avatar from 'primevue/avatar';
 import Menu from 'primevue/menu';
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { getCurrentUser, logout } from "../../services/authService";
 import { USER_ROLES } from "@/utils/constants";
 import { Icon } from "@iconify/vue";
@@ -18,7 +18,8 @@ const sidebarHovered = ref(false)
 const menuItems = [
   { label: 'Bảng điều khiển', icon: 'heroicons:home', route: '/dashboard' },
   { label: 'Khách hàng', icon: 'heroicons:user', route: '/customer' },
-  { label: 'Voucher', icon: 'heroicons:receipt-percent', route: '/voucher' },
+  { label: 'Mã khuyến mãi', icon: 'heroicons:receipt-percent', route: '/voucher' },
+  { label: 'Nhân viên', icon: 'heroicons:user-group', route: '/staff' },
 ]
 const filteredMenuItems = computed(() =>{
   const showForReportViewer = [

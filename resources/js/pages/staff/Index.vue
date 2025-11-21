@@ -1,60 +1,64 @@
 <script setup lang="ts">
-import Button from "primevue/button";
-import AutoComplete from "primevue/autocomplete";
-import { useRouter } from "vue-router";
-import DataTable from 'primevue/datatable';
+import AutoComplete from 'primevue/autocomplete';
+import Button from 'primevue/button';
 import Column from 'primevue/column';
+import DataTable from 'primevue/datatable';
+import { useToast } from 'primevue/usetoast';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { getAllStaff, getStaffByTelOrName } from '../../../services/staffService';
 import Paginator from 'primevue/paginator';
-import Tag from 'primevue/tag';
-import { onMounted, ref } from "vue";
-import { getAllCustomers, getCustomersByTelOrName } from "../../../services/customerService";
-import { useToast } from "primevue/usetoast";
 
-const meta = ref()
+const router = useRouter()
 const toast = useToast()
-const router = useRouter();
 const page = ref(1)
 const rows = ref(20)
 const total = ref(0)
 const loading = ref(false)
+const meta = ref()
 const sortField = ref("created_at")
 const sortOrder = ref("desc")
-const customers = ref([{name:"", tel:"", ward: 0, street: ""}])
-const filteredCustomers = ref([])
+const staff = ref([{name:"", tel:"", address: "", status: ""}])
 const currentQuery = ref("")
+const filteredStaff = ref([])
 
-onMounted(async () => {
-  await loadCustomers()
+onMounted(async() => {
+  await loadStaff()
 })
 
 const onPageChange = (event:any) => {
   page.value = event.page + 1
   rows.value = event.rows
 
-  loadCustomers()
+  loadStaff()
 }
 
-const getRoleLabel = (role: number) => {
-  const roleMaps: Record<number, string> = {
-    0: 'Cá nhân',
-    1: 'Doanh nghiệp',
-  }
-
-  return roleMaps[role] || 'unknown'
-}
-
-const getRoleSeverity = (role: number) => {
-  return role === 1 ? 'info' : 'success'
-}
-
-const loadCustomers = async (event?: any) => {
+const onSort = (event: any) => {
+  staff.value = []
   loading.value = true
+  if (event.sortOrder === null) {
+    sortField.value = "create_at"
+    sortOrder.value = "desc"
+  } else {
+    sortField.value = event.sortField
+    sortOrder.value = event.sortOrder === 1 ? "asc" : "desc"
+  }
+  page.value = 1
+  loadStaff()
+}
+
+const editStaff = (event: any) => {
+  const staffId = event.data.id
+  router.push({ name: "StaffDetail", params: { id: staffId } })
+}
+
+const loadStaff = async ( event?: any) =>{
+  loading.value = true 
   try {
     const pageNum = event
       ? Math.floor(event.first / event.rows) + 1
       : page.value
     const pageSize = event ? event.rows : rows.value
-
     router.replace({
       query: {
         page: pageNum,
@@ -64,14 +68,11 @@ const loadCustomers = async (event?: any) => {
       },
     })
 
-    const resp = await getAllCustomers(
-      pageNum,
-      pageSize,
-      sortField.value,
-      sortOrder.value,
-    )
-    customers.value = resp.data.data.data
+    const resp = await getAllStaff(pageNum, pageSize, sortField.value, sortOrder.value)
+    staff.value = resp.data.data.data
+    console.log("hhehe",staff.value);
     
+
     meta.value = resp.data.data
     page.value = meta.value.currentPage
     rows.value = meta.value.perPage
@@ -87,28 +88,19 @@ const loadCustomers = async (event?: any) => {
     loading.value = false
   }
 }
-const onSort = (event: any) => {
-  customers.value = []
-  loading.value = true
-  if (event.sortOrder === null) {
-    sortField.value = "create_at"
-    sortOrder.value = "desc"
-  } else {
-    sortField.value = event.sortField
-    sortOrder.value = event.sortOrder === 1 ? "asc" : "desc"
-  }
-  page.value = 1
-  loadCustomers()
-}
 
-const searchCustomers = async  (event: any) => {
+const searchStaff = async (event:any) => {
   const query = event.query
   currentQuery.value = query
   if (query.length >= 2) {
-    const searchResults = ( await getCustomersByTelOrName(query)).data.data.items
-    filteredCustomers.value = searchResults.slice(0, 10)
+    const searchResults = ( await getStaffByTelOrName(query)).data.data.items
+    filteredStaff.value = searchResults.slice(0, 10)
   }
 }
+
+const getStatusText = (status: number | string) => {
+  return status == 1 ? 'Phục vụ' : status == 0 ? 'Bếp' : '-';
+};
 
 const isPhoneNumber = (query: string) => {
   const digitCount = (query.match(/\d/g) || []).length
@@ -119,19 +111,14 @@ const getOptionLabel = (option: any) => {
   return isPhoneNumber(currentQuery.value) ? option.tel : option.name
 }
 
-const onCustomerSelect = (selectedCustomer: any) => {
-  const filterCustomer = customers.value.filter((cus) => {
-    return cus.tel === selectedCustomer.value.tel
+const onStaffSelect = (selectedStaff: any) => {
+  const filterStaff = staff.value.filter((cus) => {
+    return cus.tel === selectedStaff.value.tel
   })
-  customers.value = filterCustomer
+  staff.value = filterStaff
 }
 
-const editCustomer = (event: any) => {
-  const customerId = event.data.id
-  router.push({ name: "CustomerDetail", params: { id: customerId } })
-}
 </script>
-
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 p-6">
     <div class="max-w-7xl mx-auto">
@@ -145,18 +132,18 @@ const editCustomer = (event: any) => {
               </div>
               <div>
                 <h1 class="font-bold text-3xl bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
-                  Quản lý Khách hàng
+                  Quản lý nhân viên
                 </h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Quản lý và theo dõi thông tin khách hàng
+                  Quản lý và theo dõi thông tin Nhân viên
                 </p>
               </div>
             </div>
           </div>
           <Button
-            label="Tạo khách hàng"
+            label="Tạo Nhân viên"
             icon="pi pi-plus"
-            @click="router.push('customer/create')"
+            @click="router.push('staff/create')"
             class="p-button-rounded !bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 dark:text-white"
           />
         </div>
@@ -168,13 +155,13 @@ const editCustomer = (event: any) => {
               <i class="pi pi-search text-gray-400"></i>
             </div>
             <AutoComplete
-              :suggestions="filteredCustomers"
+              :suggestions="filteredStaff"
               :option-label="getOptionLabel"
-              @complete="searchCustomers"
-              @clear="loadCustomers"
-              @item-select="onCustomerSelect"
+              @complete="searchStaff"
+              @clear="loadStaff"
+              @item-select="onStaffSelect"
               class="w-full"
-              input-class="w-full !pl-12 !pr-4 !py-3 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm"
+              input-class="w-full !pl-12 !pr-4 !py-3 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm hover:!shadow-md transition-shadow"
               placeholder="Tìm kiếm theo tên hoặc số điện thoại..."
             >
               <template #option="{ option }">
@@ -205,10 +192,10 @@ const editCustomer = (event: any) => {
               </div>
               <div>
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                  Danh sách Khách hàng
+                  Danh sách Nhân viên
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ total || 0 }} khách hàng trong hệ thống
+                  {{ total || 0 }} Nhân viên trong hệ thống
                 </p>
               </div>
             </div>
@@ -217,7 +204,7 @@ const editCustomer = (event: any) => {
 
         <div class="overflow-x-auto px-4 py-2">
           <DataTable
-            :value="customers"
+            :value="staff"
             :loading="loading"
             data-key="id"
             class="custom-datatable"
@@ -227,7 +214,7 @@ const editCustomer = (event: any) => {
             :sort-order="sortOrder === 'asc' ? 1 : sortOrder === 'desc' ? -1 : 0"
             :removable-sort="true"
             @sort="onSort"
-            @row-click="editCustomer"
+            @row-click="editStaff"
           >
             <Column
               field="id"
@@ -247,9 +234,9 @@ const editCustomer = (event: any) => {
 
             <Column
               field="name"
-              header="Tên khách hàng"
+              header="Tên Nhân viên"
               :sortable="true"
-              style="min-width: 300px;"
+              style="min-width: 200px;"
             >
               <template #body="{ data }">
                 <div class="flex items-center gap-4 py-2">
@@ -302,30 +289,27 @@ const editCustomer = (event: any) => {
                 </div>
               </template>
             </Column>
-
             <Column
-              field="role"
-              header="Loại khách hàng"
+              field="status"
+              header="Loại nhân viên"
               :sortable="true"
-              style="min-width: 180px;"
+              style="min-width: 200px;"
             >
               <template #body="{ data }">
                 <div class="py-2">
-                  <Tag
-                    :value="getRoleLabel(data.role)"
-                    :severity="getRoleSeverity(data.role)"
-                    class="!px-4 !py-2 !rounded-lg !font-medium"
-                  >
-                    <template #default>
-                      <div class="flex items-center gap-2">
-                        <i :class="data.role === 1 ? 'pi pi-building' : 'pi pi-user'" class="text-xs"></i>
-                        <span>{{ getRoleLabel(data.role) }}</span>
-                      </div>
-                    </template>
-                  </Tag>
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                      <i class="pi pi-user text-green-600 dark:text-green-400 text-sm"></i>
+                    </div>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300 font-mono">
+                      {{getStatusText(data.status)}}
+                    </span>
+                  </div>
                 </div>
               </template>
             </Column>
+
+            
           </DataTable>
         </div>
 
@@ -349,7 +333,7 @@ const editCustomer = (event: any) => {
                 <span class="text-indigo-600 dark:text-indigo-400 font-bold">
                   {{ total || 0 }}
                 </span> 
-                khách hàng
+                Nhân viên
               </span>
             </div>
             <Paginator

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticatedController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\StaffController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Middleware\AuthAdminUser;
 use Illuminate\Support\Facades\Route;
@@ -30,5 +31,13 @@ Route::middleware(AuthAdminUser::class)->group(function() {
         Route::post('/create', 'createVoucher')->name('voucher.create');
         Route::get('/{voucher}', 'getById')->name('voucher.getById');
         Route::put('/{voucher}/update', 'updateVoucher')->name('voucher.update');
+    });
+    //staff
+    Route::controller(StaffController::class)->prefix('staff')->group(function(){
+        Route::get('/', 'getAll')->name('staff.get');
+        Route::get('/search', 'searchStaff')->name('staff.search');
+        Route::post('/create', 'createStaff')->name('staff.create');
+        Route::get('/{staff}', 'getById')->name('staff.getById');
+        Route::put('/{staff}/update', 'updateStaff')->name('staff.update');
     });
 });
