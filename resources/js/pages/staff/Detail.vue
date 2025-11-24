@@ -69,7 +69,6 @@ const handleSubmit = async () => {
 
     router.push('/staff')
   } catch (error: any) {
-    console.log(error);
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -355,7 +354,7 @@ const loadStaff = async () => {
               <div class="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
                 <div class="text-xs opacity-80 mb-1">Loại nhân viên</div>
                 <div class="font-semibold">
-                  {{ staff.status === 1 ? 'Phục vụ' : staff.status === 0 ? 'Bếp' : '-' }}
+                  {{ staff.status === "1" ? 'Phục vụ' : staff.status === "0" ? 'Bếp' : '-' }}
                 </div>
               </div>
             </div>

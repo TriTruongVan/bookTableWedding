@@ -70,8 +70,6 @@ const loadStaff = async ( event?: any) =>{
 
     const resp = await getAllStaff(pageNum, pageSize, sortField.value, sortOrder.value)
     staff.value = resp.data.data.data
-    console.log("hhehe",staff.value);
-    
 
     meta.value = resp.data.data
     page.value = meta.value.currentPage

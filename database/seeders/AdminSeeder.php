@@ -21,7 +21,7 @@ class AdminSeeder extends Seeder
             [
                 'password' => Hash::make('password'),
                 'role' => UserRoles::Admin,
-                'name' => 'Thanh An Hoi',
+                'name' => 'Thanh An Hội',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

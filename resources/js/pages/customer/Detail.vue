@@ -62,14 +62,13 @@ const handleSubmit = async () => {
     await updateCustomer(route.params.id, customer.value)
     toast.add({
       severity: 'success',
-      summary: 'Success',
+      summary: 'Thành công',
       detail: 'Cập nhật khách hàng thành công',
       life: 3000
     })
 
     router.push('/customer')
   } catch (error: any) {
-    console.log(error);
     toast.add({
       severity: 'error',
       summary: 'Error',
