@@ -56,9 +56,6 @@ const loadVoucher = async () => {
       searchQuery.value, 
     )
     listVoucher.value = resp.data.data.data
-    console.log('====================================');
-    console.log(listVoucher.value);
-    console.log('====================================');
     totalVouchers.value = resp.data.data.total
   } catch (error) {
     toast.add({

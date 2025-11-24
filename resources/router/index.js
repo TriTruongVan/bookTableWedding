@@ -14,6 +14,12 @@ const router = createRouter({
             meta: { requiresGuest: true }
         },
         {
+            path: '/profile',
+            name: 'Profile',
+            component: () => import('../js/pages/Profile.vue'),
+            meta: { requiresAuth: true }
+        },
+        {
             path: '/dashboard',
             name: 'Dashboard',
             component: () => import('../js/pages/dashboard/Index.vue'),
