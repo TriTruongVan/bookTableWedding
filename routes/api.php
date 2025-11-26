@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthenticatedController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\ServiceGroupController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoucherController;
@@ -46,5 +48,13 @@ Route::middleware(AuthAdminUser::class)->group(function() {
         Route::get('/', 'getUser')->name('user.getUser');
         Route::put('/update', 'updateUser')->name('user.update.info');
         Route::put('/updatePass', 'updateUserPass')->name('user.update.pass');
+    });
+    //serviceGroup
+    Route::controller(ServiceGroupController::class)->prefix('serviceGroup')->group(function(){
+        Route::get('/', 'getServiceGroup')->name('serviceGroup.getService');
+    });
+    //service
+    Route::controller(ServiceController::class)->prefix('service')->group(function(){
+        Route::get('/', 'getService')->name('service.getService');
     });
 });
