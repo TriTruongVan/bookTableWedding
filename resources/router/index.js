@@ -79,6 +79,12 @@ const router = createRouter({
             component: () => import('../js/pages/staff/Detail.vue'),
             meta: { requiresAuth: true }
         },
+        {
+            path: '/dish',
+            name: 'Dish',
+            component: () => import('../js/pages/dish/Index.vue'),
+            meta: { requiresAuth: true }
+        },
     ]
 })
 export default router;
