@@ -27,6 +27,7 @@ Route::middleware(AuthAdminUser::class)->group(function() {
         Route::get('/{customer}', 'getById')->name('customer.getById');
         Route::put('/{customer}/update', 'updateCustomer')->name('customer.update');
     });
+
     //voucher
     Route::controller(VoucherController::class)->prefix('voucher')->group(function(){
         Route::get('/all', 'getAllVoucher')->name('voucher.getAll');
@@ -35,6 +36,7 @@ Route::middleware(AuthAdminUser::class)->group(function() {
         Route::get('/{voucher}', 'getById')->name('voucher.getById');
         Route::put('/{voucher}/update', 'updateVoucher')->name('voucher.update');
     });
+
     //staff
     Route::controller(StaffController::class)->prefix('staff')->group(function(){
         Route::get('/', 'getAll')->name('staff.get');
@@ -43,17 +45,20 @@ Route::middleware(AuthAdminUser::class)->group(function() {
         Route::get('/{staff}', 'getById')->name('staff.getById');
         Route::put('/{staff}/update', 'updateStaff')->name('staff.update');
     });
+
     //user
     Route::controller(UserController::class)->prefix('user')->group(function(){
         Route::get('/', 'getUser')->name('user.getUser');
         Route::put('/update', 'updateUser')->name('user.update.info');
         Route::put('/updatePass', 'updateUserPass')->name('user.update.pass');
     });
-    //serviceGroup
+
+    //dishGroup
     Route::controller(ServiceGroupController::class)->prefix('serviceGroup')->group(function(){
         Route::get('/', 'getServiceGroup')->name('serviceGroup.getService');
     });
-    //service
+
+    //dish
     Route::controller(ServiceController::class)->prefix('service')->group(function(){
         Route::get('/', 'getService')->name('service.getService');
     });

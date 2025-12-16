@@ -16,40 +16,40 @@ class ServiceGroupSeeder extends Seeder
         $this->command->info("Start seeding a GroupService");
         $groupServices = [
             [
-                'name' => 'khai Vị',
+                'name' => 'KHAI VỊ',
             ],
             [
-                'name' => 'Súp',
+                'name' => 'SÚP',
             ],
             [
-                'name' => 'Gà',
+                'name' => 'GÀ',
             ],
             [
-                'name' => 'Vịt',
+                'name' => 'VỊT',
             ],
             [
-                'name' => 'Bò',
+                'name' => 'BÒ',
             ],
             [
-                'name' => 'Dê',
+                'name' => 'DÊ',
             ],
             [
-                'name' => 'Mực',
+                'name' => 'MỰC',
             ],
             [
-                'name' => 'Tôm',
+                'name' => 'TÔM',
             ],
             [
-                'name' => 'Món Chính',
+                'name' => 'MÓN CHÍNH',
             ],
             [
-                'name' => 'Món ăn theo yêu cầu',
+                'name' => 'MÓN ĂN THEO YÊU CẦU',
             ],
             [
-                'name' => 'Tráng Miệng',
+                'name' => 'TRÁNG MIỆNG',
             ],
         ];
-        foreach ($groupServices as $group) {
+        foreach ($groupServices as $group){
             ServiceGroup::updateOrCreate(
                 ['name' => $group['name']],
                 ['name' => $group['name']]

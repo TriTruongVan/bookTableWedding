@@ -19,7 +19,7 @@ class ServiceSeeder extends Seeder
             ['name' => 'Lươn đùm - bánh tráng chiên'],
             [
                 'service_group_id' => 1,
-                'description' => 'Lươn đồng um nghệ đùm lá chuối, ăn kèm bánh tráng chiên giòn'
+                'description' => 'Lươn đùm lá chuối, ăn kèm bánh tráng chiên giòn'
             ]
         ],
         [
@@ -33,14 +33,14 @@ class ServiceSeeder extends Seeder
             ['name' => 'Gỏi hải sản tươi - BPT'],
             [
                 'service_group_id' => 1,
-                'description' => 'Tôm, mực tươi luộc tái chanh, hành tây, rau răm, đậu phộng rang, bánh phồng tôm'
+                'description' => 'Tôm, mực luộc, hành tây, rau răm, đậu phộng rang, bánh phồng tôm'
             ]
         ],
         [
             ['name' => 'Gỏi bò tái chanh'],
             [
                 'service_group_id' => 1,
-                'description' => 'Thịt bò Mỹ tái chanh, hành tây, rau thơm, ớt hiểm, đậu phộng rang giã nhỏ'
+                'description' => 'Thịt bò, hành tây, rau thơm, ớt hiểm, đậu phộng rang giã nhỏ'
             ]
         ],
         [
@@ -54,21 +54,21 @@ class ServiceSeeder extends Seeder
             ['name' => 'Gỏi bò bóp thấu - ram chả - BPT'],
             [
                 'service_group_id' => 1,
-                'description' => 'Thấu bò ngâm giấm trộn thịt bò tái, ram chả chiên, bánh phồng tôm, nước mắm chua ngọt'
+                'description' => 'Búp bò, ram chả chiên, bánh phồng tôm, nước mắm chua ngọt'
             ]
         ],
         [
             ['name' => 'Gỏi Thái - ram chả'],
             [
                 'service_group_id' => 1,
-                'description' => 'Tôm, mực, tai heo trộn kiểu Thái cay cay chua ngọt, kèm ram chả chiên giòn'
+                'description' => 'Tôm, thịt heo, chả trộn kiểu Thái cay cay chua ngọt, kèm ram chả chiên giòn'
             ]
         ],
         [
             ['name' => 'Xà lách trộn bò'],
             [
                 'service_group_id' => 1,
-                'description' => 'Xà lách Mỹ, cà chua, dưa leo, thịt bò áp chảo thái lát, sốt dầu giấm hoặc mayonnaise'
+                'description' => 'Xà lách, cà chua, dưa leo, thịt bò thái lát,cà chua sốt dầu giấm hoặc mayonnaise'
             ]
         ],
         [
@@ -89,7 +89,7 @@ class ServiceSeeder extends Seeder
             ['name' => 'Gỏi gân bò trộn - BPT'],
             [
                 'service_group_id' => 1,
-                'description' => 'Gân bò giòn sần sật trộn thấu, hành tây, rau thơm, bánh phồng tôm, nước mắm chua ngọt'
+                'description' => 'Gân bò giòn sần sật trộn , hành tây, rau thơm, bánh phồng tôm, nước mắm chua ngọt'
             ]
         ],
         [
@@ -107,17 +107,17 @@ class ServiceSeeder extends Seeder
             ]
         ],
         [
-            ['name' => 'Kim chúc thịt nướng - ram chả, nem'],
+            ['name' => 'Kim chi thịt nướng - ram chả, nem'],
             [
                 'service_group_id' => 1,
-                'description' => 'Thịt ba chỉ hoặc bò Mỹ nướng cuốn kim châm, ram chả, nem nướng, rau sống, bánh tráng'
+                'description' => 'Thịt ba chỉ nướng cuốn kim châm, ram chả, nem nướng, rau sống, bánh tráng'
             ]
         ],
         [
             ['name' => 'Súp tôm chả'],
             [
                 'service_group_id' => 2,
-                'description' => 'Súp sánh mịn với tôm tươi và chả cua/chả tôm'
+                'description' => 'Súp sánh mịn với tôm tươi và chả cua/chả tôm, cà rốt, nấm tuyết,bắp mỹ'
             ]
         ],
         [
@@ -145,7 +145,7 @@ class ServiceSeeder extends Seeder
             ['name' => 'Súp tóc tiên'],
             [
                 'service_group_id' => 2,
-                'description' => 'Súp đặc biệt với tóc tiên (miến dong), nấm, trứng và các loại hải sản'
+                'description' => 'Súp đặc biệt với tóc tiên , nấm, trứng và các loại hải sản'
             ]
         ],
         [
@@ -271,7 +271,7 @@ class ServiceSeeder extends Seeder
             ['name' => 'Bò nhúng giấm'],
             [
                 'service_group_id' => 5,
-                'description' => 'Thịt bò nhúng giấm chua ngọt, ăn kèm bún, bánh tráng và rau sống'
+                'description' => 'Thịt bò nhúng giấm chua ngọt, ăn kèm nước mắm chua ngọt, bánh tráng và rau sống'
             ]
         ],
         [
@@ -537,14 +537,14 @@ class ServiceSeeder extends Seeder
             ['name' => 'Sườn non um chuối - bánh mì'],
             [
                 'service_group_id' => 9,
-                'description' => 'Sườn non um chuối xanh, đậu phụ, đậm vị miền Bắc, ăn kèm bánh mì'
+                'description' => 'Sườn non um chuối xanh, đậu phụ, đậm vị, ăn kèm bánh mì'
             ]
         ],
         [
-            ['name' => 'Vịt hầm tảo - bánh mì'],
+            ['name' => 'Vịt hầm táo - bánh mì'],
             [
                 'service_group_id' => 9,
-                'description' => 'Vịt hầm tảo biển (rong biển), bổ dưỡng, ăn kèm bánh mì'
+                'description' => 'Vịt hầm táo đỏ, bổ dưỡng, ăn kèm bánh mì'
             ]
         ],
         [
