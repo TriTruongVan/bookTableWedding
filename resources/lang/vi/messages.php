@@ -18,6 +18,7 @@ return [
     'nameRequired' => 'Vui lòng nhập tên.',
     'nameString' => 'Tên không hợp lệ.',
     'nameMax' => 'Tên không được vượt quá 255 ký tự.',
+    'nameUnique' => 'Tên món ăn đã tồn tại. Vui lòng chọn tên khác.',
     'roleRequired' => 'Vui lòng chọn vai trò.',
     'roleNumeric' => 'Vai trò phải là một số.',
     'telRequired' => 'Vui lòng nhập số điện thoại.',
@@ -42,4 +43,9 @@ return [
     'isActiveIn' => 'Giá trị trạng thái không hợp lệ.',
     'codeRegex' => 'Mã voucher chỉ được chứa chữ HOA, số và dấu gạch dưới (nếu có). Không khoảng trắng hoặc ký tự đặc biệt!',
     'statusRequired' => 'Vui lòng chọn loại nhân viên',
+    'descriptionRequired' => 'Mô tả món ăn là bắt buộc.',
+    'descriptionString' => 'Mô tả phải là chuỗi văn bản.',
+    'dishGroupIdRequired' => 'Vui lòng chọn danh mục món ăn.',
+    'dishGroupIdInteger' => 'anh mục không hợp lệ.',
+    'dishGroupIdExists' => 'Danh mục món ăn đã chọn không tồn tại.',
 ];

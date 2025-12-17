@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticatedController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DishController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceGroupController;
 use App\Http\Controllers\StaffController;
@@ -53,13 +54,11 @@ Route::middleware(AuthAdminUser::class)->group(function() {
         Route::put('/updatePass', 'updateUserPass')->name('user.update.pass');
     });
 
-    //dishGroup
-    Route::controller(ServiceGroupController::class)->prefix('serviceGroup')->group(function(){
-        Route::get('/', 'getServiceGroup')->name('serviceGroup.getService');
-    });
-
     //dish
-    Route::controller(ServiceController::class)->prefix('service')->group(function(){
-        Route::get('/', 'getService')->name('service.getService');
+    Route::controller(DishController::class)->prefix('dish')->group(function(){
+        Route::get('/getAllDishGroup', 'getAllDishGroup')->name('dish.getAllDishGroup');
+        Route::get('/', 'getDish')->name('dish.getDish');
+        Route::get('/{dish}', 'getById')->name('dish.getById');
+        Route::put('/{dish}/update', 'updateDish')->name('dish.updateDish');
     });
 });
