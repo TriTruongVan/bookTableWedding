@@ -3,126 +3,154 @@ import AutoComplete from "primevue/autocomplete";
 import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
-import Paginator from "primevue/paginator";
-import { computed, onMounted, ref } from "vue";
-import { getDish, getDishGroup } from "../../../services/dishService";
+import Tag from "primevue/tag";
+import { ref, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useToast } from "primevue/usetoast";
+import { getDishGroup, getDish } from "../../../services/dishService";
 
-const loading = ref(false);
-const listDish = ref([]);
-const listDishGroup = ref([]);
+const router = useRouter();
 const toast = useToast();
-const selectGroupId = ref(null);
-const pageSize = ref(20)
-const totalService = ref(0)
-const currentPage = ref(1)
-const searchQuery = ref('')
 
+const loading = ref(false);                    // Đang load dữ liệu không?
+const listDishGroup = ref<{ id: number; name: string }[]>([]); // Danh sách các danh mục (tab)
+const listDish = ref<any[]>([]);               // Danh sách TẤT CẢ món ăn (gốc)
+const displayedDish = ref<any[]>([]);          // Danh sách món đang HIỂN THỊ trên bảng (sau khi lọc)
+
+const selectGroupId = ref<number | null>(null); // Danh mục đang chọn (null = Tất cả)
+const searchQuery = ref('');                   // Nội dung trong ô tìm kiếm
+const filteredSuggestions = ref<any[]>([]);    // Danh sách gợi ý khi gõ tìm kiếm
+
+// Load data
 onMounted(async () => {
   await loadData();
-});
-
-const onPageChange = (event:any) => {
-  currentPage.value = event.page + 1
-  pageSize.value = event.rows
-
-  loadData();
-}
-
-const filteredDishes = computed(() => {
-  if (!selectGroupId.value) return listDish.value;
-  return listDish.value.filter(
-    (dish:any) => dish.service_group_id == selectGroupId.value
-  );
 });
 
 const loadData = async () => {
   loading.value = true;
   try {
-    const [respDish, respGroup] = await Promise.all([
-      getDish(),
+    const [groupResp, dishResp] = await Promise.all([
       getDishGroup(),
+      getDish()
     ]);
-    listDish.value = respDish.data.data.data;
-    listDishGroup.value = respGroup.data.data.data;
-    // Tự động chọn tab đầu tiên nếu chưa chọn
-    if (listDishGroup.value.length > 0 && !selectGroupId.value) {
+
+    listDishGroup.value = groupResp.data.data.items;
+    listDish.value = dishResp.data.data;
+    displayedDish.value = listDish.value;
+
+    // Tự động chọn danh mục đầu tiên nếu chưa chọn
+    if (listDishGroup.value.length > 0 && selectGroupId.value === null) {
       selectGroupId.value = listDishGroup.value[0].id;
     }
   } catch (error) {
     toast.add({
       severity: "error",
       summary: "Lỗi",
-      detail: "Không thể tải dữ liệu món ăn",
+      detail: "Tải danh sách món ăn thất bại",
       life: 3000,
     });
   } finally {
     loading.value = false;
   }
 };
+
+const applyFilter = () => {
+  let filtered = [...listDish.value];// Copy danh sách gốc
+
+  // Lọc theo danh mục nếu có chọn
+  if (selectGroupId.value !== null) {
+    filtered = filtered.filter(d => d.dish_group_id === selectGroupId.value);
+  }
+
+  // Lọc theo từ khóa tìm kiếm nếu có gõ
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase().trim();
+    filtered = filtered.filter(d => d.name.toLowerCase().includes(q));
+  }
+
+  displayedDish.value = filtered;// Cập nhật bảng
+};
+
+watch([selectGroupId, searchQuery], applyFilter);
+
+const searchSuggestions = (event: { query: string }) => {
+  const query = event.query.trim().toLowerCase();
+  if (query.length < 1) {
+    filteredSuggestions.value = [];
+    return;
+  }
+  filteredSuggestions.value = listDish.value
+    .filter(d => d.name.toLowerCase().includes(query))
+    .slice(0, 10);
+};
+
+const onDishSelect = (event: any) => {
+  const selected = event.value;
+  searchQuery.value = selected.name;     // Hiện tên món trong ô search
+  displayedDish.value = [selected];      // Chỉ hiển thị đúng 1 món đó
+  selectGroupId.value = null;            // Bỏ chọn tab danh mục
+};
+
+const clearSearch = () => {
+  searchQuery.value = '';
+  applyFilter();
+};
+
+const editDish = (event: any) => {
+  const dishID = event.data.id
+  router.push({ name: "dishDetail", params: { id: dishID } })
+}
 </script>
+
 <template>
-  <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 p-4 md:p-6 lg:p-8"
-  >
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 p-6">
     <div class="max-w-7xl mx-auto">
-      <!-- Header Card -->
-      <div
-        class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 p-6 md:p-8 mb-6 backdrop-blur-sm bg-opacity-90"
-      >
-        <div
-          class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
-        >
-          <div class="space-y-3">
-            <div class="flex items-center gap-4">
-              <div
-                class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform"
-              >
-                <i class="pi pi-book text-white text-2xl"></i>
+      <!-- Header với animation -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 mb-6 animate-fade-in-down">
+        <div class="flex justify-between items-center">
+          <div class="space-y-2">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg animate-pulse-slow">
+                <i class="pi pi-utensils text-white text-xl"></i>
               </div>
               <div>
-                <h1
-                  class="font-bold text-3xl md:text-4xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent"
-                >
+                <h1 class="font-bold text-3xl bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
                   Quản lý món ăn
                 </h1>
-                <p
-                  class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2"
-                >
-                  <i class="pi pi-chart-line text-xs"></i>
-                  Quản lý và theo dõi món ăn
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Quản lý và theo dõi tất cả món ăn của hệ thống
                 </p>
               </div>
             </div>
           </div>
-          <Button
-            label="Tạo món ăn"
-            icon="pi pi-plus"
-            class="p-button-rounded !bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 !text-white !border-0 !shadow-lg hover:!shadow-xl transition-all duration-300 transform hover:scale-105 !px-6 !py-3 !font-semibold"
-          />
         </div>
 
-        <!-- Search Box -->
-        <div class="mt-8">
-          <div class="relative group">
-            <div
-              class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10"
-            >
-              <i
-                class="pi pi-search text-gray-400 group-focus-within:text-indigo-500 transition-colors"
-              ></i>
+        <!-- Search với animation -->
+        <div class="mt-6 animate-fade-in">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+              <i class="pi pi-search text-gray-400 transition-colors duration-300"></i>
             </div>
             <AutoComplete
-              class="w-full"
-              input-class="w-full !pl-14 !pr-4 !py-4 !rounded-2xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-md focus:!shadow-lg hover:!shadow-lg !transition-all !duration-300 !bg-white dark:!bg-gray-700 !text-gray-900 dark:!text-white"
-              placeholder="Tìm kiếm theo tên món ăn..."
+              v-model="searchQuery"
+              :suggestions="filteredSuggestions"
+              @complete="searchSuggestions"
+              @item-select="onDishSelect"
+              @clear="clearSearch"
+              @keyup.enter="applyFilter"
+              class="w-full transition-all duration-300"
+              optionLabel="name"
+              display="chip"
+              input-class="w-full !pl-12 !pr-4 !py-3 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm !transition-all !duration-300 hover:!shadow-md"
+              placeholder="Tìm kiếm món ăn theo tên..."
             >
               <template #option="{ option }">
-                <div
-                  class="p-3 hover:bg-indigo-50 dark:hover:bg-gray-600 rounded-xl transition-all duration-200 cursor-pointer"
-                >
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 transform hover:scale-[1.02]">
                   <div class="font-medium text-gray-900 dark:text-white">
                     {{ option.name }}
+                  </div>
+                  <div class="text-sm text-gray-600 dark:text-gray-300 mt-1 truncate">
+                    {{ option.description || 'Không có mô tả' }}
                   </div>
                 </div>
               </template>
@@ -131,191 +159,93 @@ const loadData = async () => {
         </div>
       </div>
 
-      <!-- Content Card -->
-      <div
-        class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden backdrop-blur-sm bg-opacity-90"
-      >
-        <div
-          class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700"
-        >
+      <!-- Tab nhóm món với animation -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6 animate-fade-in-up animation-delay-100">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
           <div class="flex flex-wrap gap-3">
-            <button
-              class="px-8 py-2.5 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
-              :class="
-                !selectGroupId
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
-                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-              "
+            <Button
+              label="Tất cả"
+              :outlined="selectGroupId !== null"
               @click="selectGroupId = null"
-            >
-              <i class="pi pi-th-large mr-2"></i>
-              TẤT CẢ
-            </button>
-            <template v-for="(value, index) in listDishGroup" :key="index">
-              <button
-                class="px-7 py-2.5 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
-                :class="
-                  selectGroupId === value.id
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
-                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                "
-                @click="selectGroupId = value.id"
-              >
-                <i class="pi pi-tag mr-2"></i>
-                {{ value.name }}
-              </button>
-            </template>
+              class="transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            />
+            <Button
+              v-for="group in listDishGroup"
+              :key="group.id"
+              :label="group.name"
+              :outlined="selectGroupId !== group.id"
+              @click="selectGroupId = group.id"
+              class="transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Table với animation -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in-up animation-delay-200">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center transition-all duration-300 hover:scale-110 hover:rotate-12">
+              <i class="pi pi-list text-indigo-600 dark:text-indigo-400"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Danh sách món ăn
+              </h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400 transition-all duration-300">
+                {{ displayedDish.length }} món ăn
+              </p>
+            </div>
           </div>
         </div>
 
         <div class="overflow-x-auto px-4 py-2">
           <DataTable
-            :value="filteredDishes"
+            :value="displayedDish"
             :loading="loading"
             data-key="id"
             class="custom-datatable"
             row-hover
-            selection-mode="single"
-            @row-click="editStaff"
+            @row-click="editDish"
           >
-            <Column field="id" header="ID" style="min-width: 140px">
+            <Column field="id" header="ID" style="min-width: 140px;">
               <template #body="{ data }">
-                <div class="flex items-center gap-2 py-2">
-                  <div
-                    class="px-4 py-2.5 rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-200 dark:border-blue-700 shadow-sm"
-                  >
-                    <span
-                      class="text-sm font-mono font-bold text-blue-700 dark:text-blue-300"
-                    >
-                      #{{ data.id }}
-                    </span>
-                  </div>
+                <div class="px-4 py-2.5 rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-2 border-blue-200 dark:border-blue-700 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105 cursor-pointer">
+                  <span class="text-sm font-mono font-bold text-blue-700 dark:text-blue-300">
+                    #{{ data.id }}
+                  </span>
                 </div>
               </template>
             </Column>
 
-            <Column
-              field="name"
-              header="Tên món ăn"
-              :sortable="true"
-              style="min-width: 200px"
-            >
+            <Column field="name" header="Tên món ăn" style="min-width: 300px;">
               <template #body="{ data }">
-                <div class="flex items-center gap-4 py-2">
-                  <div
-                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-md flex-shrink-0"
-                  >
-                    <i class="pi pi-book text-white text-base"></i>
-                  </div>
+                <div class="flex items-center gap-4 py-2 transition-all duration-300 hover:translate-x-2">
                   <div class="flex-1 min-w-0">
-                    <div
-                      class="font-semibold text-gray-900 dark:text-white text-base"
-                    >
+                    <div class="font-semibold text-gray-900 dark:text-white transition-colors duration-300 hover:text-indigo-600 dark:hover:text-indigo-400">
                       {{ data.name }}
                     </div>
                   </div>
                 </div>
               </template>
             </Column>
-            <Column
-              field="service_group_id"
-              header="Danh mục"
-              style="min-width: 180px"
-              :sortable="true"
-            >
+
+            <Column header="Danh mục" style="min-width: 180px;">
               <template #body="{ data }">
-                <div class="py-3">
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 flex items-center justify-center flex-shrink-0 shadow-md"
-                    >
-                      <i
-                        class="pi pi-pen-to-square text-purple-600 dark:text-purple-400 text-lg"
-                      ></i>
-                    </div>
-                    <span
-                      class="text-sm font-bold text-purple-700 dark:text-purple-300"
-                    >
-                      {{ data.group_name }}
-                    </span>
-                  </div>
-                </div>
+                <span class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 transition-colors duration-300 hover:text-gray-900 dark:hover:text-white">
+                  {{ data.dish_group_name || '-' }}
+                </span>
               </template>
             </Column>
-            <Column
-              field="description"
-              header="Mô tả"
-              :sortable="true"
-              style="min-width: 200px"
-            >
+
+            <Column field="description" header="Mô tả" style="min-width: 300px;">
               <template #body="{ data }">
-                <div class="py-2">
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0"
-                    >
-                      <i
-                        class="pi pi-book text-green-600 dark:text-green-400 text-sm"
-                      ></i>
-                    </div>
-                    <span
-                      class="text-sm font-medium text-gray-700 dark:text-gray-300 font-mono"
-                    >
-                      {{ data.description }}
-                    </span>
-                  </div>
-                </div>
+                <span class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 transition-colors duration-300 hover:text-gray-900 dark:hover:text-white">
+                  {{ data.description || '-' }}
+                </span>
               </template>
             </Column>
           </DataTable>
-        </div>
-
-        <!-- Footer with Pagination -->
-        <div
-          class="p-6 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700"
-        >
-          <div
-            class="flex flex-col sm:flex-row justify-between items-center gap-4"
-          >
-            <div
-              class="flex items-center gap-3 bg-white dark:bg-gray-700 px-5 py-3 rounded-xl shadow-md"
-            >
-              <div
-                class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 flex items-center justify-center"
-              >
-                <i
-                  class="pi pi-info-circle text-indigo-600 dark:text-indigo-400 text-lg"
-                ></i>
-              </div>
-              <span
-                class="text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Hiển thị
-                <span
-                  class="text-indigo-600 dark:text-indigo-400 font-bold text-base"
-                  >{{ ((currentPage - 1) * pageSize) + 1 }}</span
-                >
-                đến
-                <span
-                  class="text-indigo-600 dark:text-indigo-400 font-bold text-base"
-                  > {{ Math.min(currentPage * pageSize, totalService || 0) }}</span
-                >
-                trong tổng số
-                <span
-                  class="text-indigo-600 dark:text-indigo-400 font-bold text-base"
-                  > {{ totalService || 0 }}</span
-                >
-                món ăn
-              </span>
-            </div>
-            <Paginator
-              :rows="pageSize"
-              :total-records="totalService"
-              :rows-per-page-options="[10, 20, 30, 50, 100]"
-              class="custom-paginator"
-              @page="onPageChange"
-            />
-          </div>
         </div>
       </div>
     </div>
@@ -323,47 +253,110 @@ const loadData = async () => {
 </template>
 
 <style scoped>
-/* Custom scrollbar */
+/* Animation keyframes */
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Animation classes */
+.animate-fade-in-down {
+  animation: fade-in-down 0.6s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* Animation delays */
+.animation-delay-100 {
+  animation-delay: 0.1s;
+  animation-fill-mode: backwards;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+  animation-fill-mode: backwards;
+}
+
+/* Custom DataTable styling với transitions */
+:deep(.custom-datatable) {
+  .p-datatable-tbody > tr {
+    transition: all 0.3s ease;
+  }
+  
+  .p-datatable-tbody > tr:hover {
+    background-color: rgba(99, 102, 241, 0.05);
+    transform: scale(1.01);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  .p-datatable-tbody > tr > td {
+    transition: all 0.3s ease;
+  }
+}
+
+/* Smooth scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #6366f1, #a855f7);
+  background: rgba(99, 102, 241, 0.3);
   border-radius: 10px;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #4f46e5, #9333ea);
-}
-
-/* Button hover effects */
-button {
-  position: relative;
-  overflow: hidden;
-}
-
-button::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-button:hover::before {
-  width: 300px;
-  height: 300px;
+  background: rgba(99, 102, 241, 0.5);
 }
 </style>

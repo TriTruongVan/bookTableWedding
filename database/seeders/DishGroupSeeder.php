@@ -2,19 +2,19 @@
 
 namespace Database\Seeders;
 
-use App\Models\ServiceGroup;
+use App\Models\DishGroup;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class ServiceGroupSeeder extends Seeder
+class DishGroupSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $this->command->info("Start seeding a GroupService");
-        $groupServices = [
+        $this->command->info("Start seeding a DishGroup");
+        $dishGroup = [
             [
                 'name' => 'KHAI VỊ',
             ],
@@ -49,12 +49,12 @@ class ServiceGroupSeeder extends Seeder
                 'name' => 'TRÁNG MIỆNG',
             ],
         ];
-        foreach ($groupServices as $group){
-            ServiceGroup::updateOrCreate(
-                ['name' => $group['name']],
-                ['name' => $group['name']]
+        foreach ($dishGroup as $item){
+            DishGroup::firstOrCreate(
+                ['name' => $item['name']],
+                $item
             );
         }
-        $this->command->info("Finish seeding a GroupService");
+        $this->command->info("Finish seeding a DishGroup");
     }
 }
