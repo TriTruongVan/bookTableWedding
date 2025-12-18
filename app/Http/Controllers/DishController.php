@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\admin\DishRequest;
 use App\Http\Resources\DishResource;
-use App\Http\Resources\PaginateResource;
 use App\Models\Dish;
 use App\Models\DishGroup;
 use Illuminate\Http\Request;
