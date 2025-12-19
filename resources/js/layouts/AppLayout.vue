@@ -17,7 +17,7 @@ const sidebarHovered = ref(false)
 
 const menuItems = [
   { label: 'Bảng điều khiển', icon: 'heroicons:home', route: '/dashboard' },
-  { label: 'Đặt bàn', icon: 'heroicons:clipboard-document-list', route: '/order' },
+  { label: 'Đặt bàn', icon: 'heroicons:clipboard-document-list', route: '/orders' },
   { label: 'Khách hàng', icon: 'heroicons:user', route: '/customer' },
   { label: 'Mã khuyến mãi', icon: 'heroicons:receipt-percent', route: '/voucher' },
   { label: 'Nhân viên', icon: 'heroicons:user-group', route: '/staff' },
