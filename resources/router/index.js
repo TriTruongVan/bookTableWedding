@@ -92,9 +92,15 @@ const router = createRouter({
             meta: { requiresAuth: true }
         },
         {
-            path: '/order',
+            path: '/orders',
             name: 'Order',
             component: () => import('../js/pages/orders/index.vue'),
+            meta: { requiresAuth: true }
+        },
+        {
+            path: '/orders/create',
+            name: 'OrderCreate',
+            component: () => import('../js/pages/orders/create.vue'),
             meta: { requiresAuth: true }
         },
     ]
