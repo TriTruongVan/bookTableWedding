@@ -98,7 +98,7 @@ const handleCreate = async () =>{
             </div>
             <div>
               <h1 class="font-bold text-3xl bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
-                Tạo Khách hàng Mới
+                Tạo khách hàng Mới
               </h1>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Nhập thông tin khách hàng mới vào hệ thống

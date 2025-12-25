@@ -113,4 +113,14 @@ class CustomerController extends Controller
             return $this->badRequestRes();
         }
     }
+
+    public function getByTel(Request $request)
+    {
+        $search = $request->search;
+        
+        $items = Customer::where('tel', 'LIKE', "%$search%")
+                ->get(['id', 'tel', 'name', 'street', 'ward', 'city']);
+        
+        return $this->okRes(compact('items'));
+    }
 }

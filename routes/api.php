@@ -23,6 +23,7 @@ Route::middleware(AuthAdminUser::class)->group(function() {
     Route::controller(CustomerController::class)->prefix('customer')->group(function (){
         Route::get('/', 'getAllCustomer')->name('customer.getAll');
         Route::get('/search', 'searchCustomer')->name('customer.search');
+        Route::get('/tel', 'getByTel')->name('customer.getByTel');
         Route::post('/create', 'createCustomer')->name('customer.create');
         Route::get('/wards', 'getAllWards')->name('customer.getAllWards');
         Route::get('/{customer}', 'getById')->name('customer.getById');
