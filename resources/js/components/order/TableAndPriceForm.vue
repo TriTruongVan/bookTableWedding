@@ -1,0 +1,146 @@
+<script setup>
+import InputNumber from "primevue/inputnumber";
+import { computed, watch } from "vue";
+
+const props = defineProps({
+  modelValue: {
+    type: Object,
+    required: false,
+    default: () => ({ soBan: "", donGia: "" }),
+  },
+});
+
+const emit = defineEmits([
+  "update:modelValue",
+  "update:tongTien"
+]);
+
+// Computed 2 chiều an toàn cho toàn bộ object
+const tableData = computed({
+  get: () => props.modelValue ?? { soBan: "", donGia: "" },
+  set: (newValue) => emit("update:modelValue", newValue),
+});
+
+// Tính tổng tiền
+const tongTien = computed(() => {
+  const soBan = Number(tableData.value?.soBan) || 0;
+  const donGia = Number(tableData.value?.donGia) || 0;
+  return soBan * donGia;
+});
+
+const tongTienFormat = computed(() => {
+  return tongTien.value.toLocaleString("vi-VN");
+});
+
+const donGiaFormat = computed(() => {
+  const donGia = Number(tableData.value?.donGia) || 0;
+  return donGia.toLocaleString("vi-VN");
+});
+
+watch(tongTien, (value) => {
+  emit("update:tongTien", value)
+});
+</script>
+
+<template>
+  <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-6 rounded-2xl">
+    <!-- Header -->
+    <div class="mb-6 text-center">
+      <h1 class="text-2xl font-bold text-indigo-900 dark:text-indigo-300 mb-1">
+        Dịch vụ tiệc cưới
+      </h1>
+      <p class="text-lg font-semibold text-blue-600 dark:text-blue-400">THANH AN HỘI</p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+      <!-- Section: Số bàn & Giá -->
+      <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Số bàn & Giá</h2>
+        </div>
+
+        <div class="space-y-5">
+          <!-- Số bàn -->
+          <div>
+            <label for="soBan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Số bàn <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <InputNumber
+                v-model.number="tableData.soBan"
+                inputId="soBan"
+                placeholder="Nhập số bàn"
+                class="w-full"
+                :min="0"
+                :pt="{
+                  input: {
+                    class: 'w-full px-4 py-3 pr-16 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700 dark:text-gray-100'
+                  }
+                }"
+              />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm pointer-events-none">
+                bàn
+              </span>
+            </div>
+          </div>
+
+          <!-- Đơn giá -->
+          <div>
+            <label for="donGia" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Đơn giá / bàn <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <InputNumber
+                v-model="tableData.donGia"
+                inputId="donGia"
+                placeholder="Ví dụ: 1450000"
+                class="w-full"
+                :min="0"
+                locale="vi-VN"
+                :pt="{
+                  input: {
+                    class: 'w-full px-4 py-3 pr-16 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:bg-gray-700 dark:text-gray-100'
+                  }
+                }"
+              />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm pointer-events-none">
+                đ
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tổng tiền -->
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-indigo-900/20 dark:to-blue-900/20 p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-blue-600 dark:bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Tổng tiền</p>
+              <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                {{ tongTienFormat }} đ
+              </p>
+            </div>
+          </div>
+          
+          <div v-if="tableData.soBan && tableData.donGia" class="text-right">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              {{ tableData.soBan }} bàn × {{ donGiaFormat }} đ
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

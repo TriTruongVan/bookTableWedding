@@ -19,3 +19,7 @@ export const getCustomerById = async(id) => {
 export const updateCustomer = async (id, customer) => {
   return axios.put(route('customer.update', id), customer)
 }
+
+export const getCustomersByTel = async (search = '') => {
+  return axios.get(route('customer.getByTel', {search}))
+}
