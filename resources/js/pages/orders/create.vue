@@ -38,7 +38,8 @@ const orderData = ref({
     solarDate: null,
     lunarDay: null,
     lunarMonth: null,
-    lunarYear: null,
+    lunarYear: "",
+    lunarCanChi:"",
     session: "",
   },
   soBanGia: {
@@ -201,7 +202,7 @@ const submitOrder = async () => {
       detail: "Đã tạo đơn hàng thành công",
       life: 3000,
     });
-    router.push('orders')
+    router.push('/orders')
   } catch (error) {
     toast.add({
       severity: 'error',
@@ -431,7 +432,9 @@ const submitOrder = async () => {
                     • Lịch âm: Ngày
                     {{ orderData.schedule.lunarDay || "?" }} tháng
                     {{ orderData.schedule.lunarMonth || "?" }} năm
-                    {{ orderData.schedule.lunarYear || "?" }}
+                    {{ orderData.schedule.lunarCanChi || "?" }}
+                    ({{ orderData.schedule.lunarYear || "?" }})
+                    
                   </p>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     • Lịch dương:
@@ -489,7 +492,7 @@ const submitOrder = async () => {
                     ></i>
                   </div>
                   <p class="font-semibold text-gray-700 dark:text-gray-300">
-                    Ghi chú
+                    Địa điểm tổ chức
                   </p>
                 </div>
                 <div class="ml-10">

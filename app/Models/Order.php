@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 
 class Order extends Model
 {
-    use HasFactory, SoftDeletes, HasUppercaseUlids;
+    use HasFactory, SoftDeletes;
 
     protected $table = "orders";
 
@@ -41,6 +41,26 @@ class Order extends Model
         'total_amount'    => 'decimal:2',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        //TODO handle concurrent creating
+        static::creating(function ($order) {
+            if (!$order->id) {
+                $datePart = now()->format('ymd');
+
+                $lastNumber = self::where('id', 'like', $datePart . '-%')
+                    ->selectRaw("MAX(CAST(SUBSTR(id, INSTR(id, '-') + 1) AS UNSIGNED)) as max_number")
+                    ->value('max_number');
+
+                $newNumber = $lastNumber ? $lastNumber + 1 : 1;
+
+                $order->id = $datePart . '-' . $newNumber;
+            }
+        });
+    }
+
     protected $attributes = [
         'status' => OrderStatus::SAN_SANG,
     ];
@@ -55,7 +75,7 @@ class Order extends Model
         if (!$this->lunar_day || !$this->lunar_month || !$this->lunar_year) {
             return null;
         }
-        return "Ngày {$this->lunar_day} tháng {$this->lunar_month} năm {$this->lunar_year}";
+        return "Mồng {$this->lunar_day} Tháng {$this->lunar_month} Năm {$this->lunar_year}";
     }
 
     public function getLunarDateShortAttribute(): ?string

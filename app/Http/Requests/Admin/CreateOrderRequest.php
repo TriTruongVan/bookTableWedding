@@ -67,6 +67,9 @@ class CreateOrderRequest extends FormRequest
 
             'dishData.required'           => __('messages.dishDataRequired'),
             'dishData.min'                => __('messages.dishDataMin'),
+
+            'staffData.*.id.required'     => __('messages.staffIdRequired'),
+            'staffData.*.id.exists'       => __('messages.staffIdExists'),
         ];
     }
 }

@@ -695,6 +695,13 @@ class DishSeeder extends Seeder
             ]
         ],
         [
+            ['name' => 'Bánh bao bánh vạc'],
+            [
+                'dish_group_id' => 10,
+                'description' => 'Bánh bột lọc nhân tôm, trong suốt, mềm dẻo, rắc hành phi, ăn kèm nước chấm chua ngọt. '
+            ]
+        ],
+        [
             ['name' => 'Cá mú hấp xì dầu'],
             [
                 'dish_group_id' => 10,
