@@ -4,8 +4,8 @@ import { computed } from 'vue';
 
 const props = defineProps({
     modelValue: {
-        type: [Array, null],
-        default: () => []
+        type: Array,
+        default: () => [],
     },
     staff: {
         type: Array,

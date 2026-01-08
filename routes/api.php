@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthenticatedController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DishController;
+use App\Http\Controllers\orderController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ServiceGroupController;
 use App\Http\Controllers\StaffController;
@@ -62,4 +63,10 @@ Route::middleware(AuthAdminUser::class)->group(function() {
         Route::get('/{dish}', 'getById')->name('dish.getById');
         Route::put('/{dish}/update', 'updateDish')->name('dish.updateDish');
     });
+
+    //orders
+    Route::controller(orderController::class)->prefix('order')->group(function(){
+        Route::post('/create', 'createOrder')->name('order.create');
+    });
+    
 });

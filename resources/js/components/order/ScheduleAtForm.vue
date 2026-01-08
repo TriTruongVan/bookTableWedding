@@ -120,12 +120,13 @@ watch(
       lunarCanChi: selectedYear.value.canChi,
       isLeapMonth: isLeapMonth.value,
       session: session.value,
-      solarDate: solarDate.value.full,
+      solarDate: `${solarDate.value.year}-${solarDate.value.month}-${solarDate.value.day}`,
       solarDateObj: solarDate.value
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 )
+
 </script>
 
 <template>

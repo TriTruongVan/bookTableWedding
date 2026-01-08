@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('voucher_orders', function (Blueprint $table) {
-            $table->id();
             $table->foreignUlid('order_id')->constrained()->onDelete('cascade');
             $table->foreignUlid('voucher_id')->constrained()->onDelete('cascade');
             $table->unique(['order_id', 'voucher_id']);

@@ -37,4 +37,11 @@ class Staff extends Model
         $cityLabel = City::from($this->city)->getLabel();
         return implode(', ', array_filter([$wardLabel, $cityLabel]));
     }
+
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'order_staff')
+                    ->withPivot(['event_date', 'session'])
+                    ->withTimestamps();
+    }
 }
