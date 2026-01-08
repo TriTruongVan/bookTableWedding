@@ -58,5 +58,6 @@ return [
     'dishDataRequired' => 'Vui lòng chọn ít nhất một món ăn.',
     'dishDataMin' => 'Vui lòng chọn ít nhất một món ăn.',
     'staffDataRequired' => 'Vui lòng phân công ít nhất một nhân viên.',
-    'staffDataMin' => 'Vui lòng phân công ít nhất một nhân viên.',
+    'staffIdExists' => 'Nhân viên không tồn tại.',
+
 ];

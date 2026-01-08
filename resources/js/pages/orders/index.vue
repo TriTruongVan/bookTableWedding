@@ -1,12 +1,77 @@
-<script setup>
+<script setup lang="ts">
 import ListOrders from '@/components/order/ListOrders.vue';
 import AutoComplete from 'primevue/autocomplete';
 import Button from 'primevue/button';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { getOrders } from '../../../services/orderService';
+import { useToast } from 'primevue/usetoast';
 
 const router = useRouter()
+const loading = ref(false)
+const listOrder = ref([])
+const toast = useToast()
 
+const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+const searchQuery = ref('')
+const currentSearchTerm = ref()
+const filteredOrder = ref([])
+
+onMounted(async() => {
+  await loadOrder()
+})
+
+const loadOrder = async () =>{
+  loading.value = true
+  try {
+    const respOrder = await getOrders(currentPage.value, pageSize.value, searchQuery.value)
+    listOrder.value = respOrder.data.data.data
+    total.value = respOrder.data.data.total
+
+    console.log(respOrder);
+    
+  } catch (error) {
+    toast.add({
+      severity: "error",
+      summary: "Lỗi",
+      detail: "Cập nhật danh sách thất bại",
+      life: 3000,
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const searchOrder = async (event: any) => {
+  const query = event.query.trim()
+  currentSearchTerm.value = query
+
+  if (query.length < 2) {
+    filteredOrder.value = []
+    return
+  }
+  try {
+    const resp = await getOrders(1, 10, query)
+    filteredOrder.value = resp.data.data.data
+  } catch (err) {
+    filteredOrder.value = []
+  }
+}
+
+const onOrderSelect = (event: any) => {
+  const selected = event.value
+  searchQuery.value = selected.code
+  listOrder.value = [selected]
+  total.value = 1
+  currentPage.value = 1
+}
+
+const onSearch = () => {
+  currentPage.value = 1
+  loadOrder()
+}
 </script>
 <template>
   <div
@@ -50,22 +115,27 @@ const router = useRouter()
               <i class="pi pi-search text-gray-400"></i>
             </div>
             <AutoComplete
-              :suggestions="filteredCustomers"
-              :option-label="getOptionLabel"
-              @complete="searchCustomers"
-              @clear="loadCustomers"
-              @item-select="onCustomerSelect"
+              v-model="searchQuery"
+              :suggestions="filteredOrder"
+              @complete="searchOrder"
+              @clear="loadOrder"
+              @keyup.enter="onSearch"
+              @item-select="onOrderSelect"
               class="w-full"
+              optionLabel="code"
               input-class="w-full !pl-12 !pr-4 !py-3 !rounded-xl !border-2 !border-gray-200 dark:!border-gray-600 focus:!border-indigo-500 dark:focus:!border-indigo-400 !shadow-sm"
               placeholder="Tìm kiếm mã đơn, dịch vụ hoặc khách hàng..."
             >
               <template #option="{ option }">
                 <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
                   <div class="font-medium text-gray-900 dark:text-white">
-                    {{ option.name }}
+                    {{ option.customer.name }}
                   </div>
                   <div class="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                    {{ option.tel }}
+                    {{ option.customer.address }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
+                    {{ option.customer.tel }}
                   </div>
                 </div>
               </template>
@@ -74,6 +144,9 @@ const router = useRouter()
         </div>
       </div>
     </div>
-    <ListOrders/>
+    <ListOrders
+      :listOrder="listOrder"
+      :total="total"
+    />
   </div>
 </template>

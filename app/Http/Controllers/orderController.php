@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\City;
 use App\Http\Requests\admin\CreateOrderRequest;
+use App\Http\Resources\OrderResource;
+use App\Http\Resources\PaginateResource;
 use App\Models\Customer;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -90,5 +92,26 @@ class orderController extends Controller
             Log::error('Create Order Error:', ['exception' => $th->getMessage()]);
             return $this->badRequestRes();
         }
+    }
+
+    public function getOrder(Request $request)
+    {
+        $search = $request->search;
+
+        $query = Order::with([
+            'customer',
+            'dishes',
+            'staffs'
+        ]);
+        if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('id', 'like', "%$search%")
+                ->orWhereHas('customer', fn($c) => $c->where('name', 'like', "%$search%"))
+                ->orWhereDate('event_date', $search);
+            });
+        }
+        $query->orderBy('created_at', 'desc');
+        $items = $query->paginate($request->size);
+        return $this->okRes(PaginateResource::make($items, OrderResource::class));
     }
 }
