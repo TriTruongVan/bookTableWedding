@@ -20,4 +20,9 @@ class Dish extends Model
     {
         return $this->belongsTo(DishGroup::class);
     }
+
+    public function orders() 
+    {
+        return $this->belongsToMany(Dish::class, 'order_dishes');
+    }
 }

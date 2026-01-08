@@ -9,7 +9,6 @@ const props = defineProps({
   modelValue: {
     type: Object,
     required: true,
-    default: () => ({ name: '', tel: '', street: '', ward: '' })
   },
   wards: {
     type: Array,
@@ -40,17 +39,14 @@ const searchCustomers = async (event) => {
   }
 };
 
-const onCustomerSelect = (event) => {
-  const selected = event.value; // PrimeVue AutoComplete dùng event.value cho item được chọn
-  if (selected) {
-    customer.value = {
-      name: selected.name || '',
-      tel: selected.tel || '',
-      street: selected.street || '',
-      ward: selected.ward || null // nếu backend trả ward là object hoặc id
-    };
+const onCustomerSelect = (selectedCustomer) => {
+  customer.value = {
+    name: selectedCustomer.value.name,
+    tel: selectedCustomer.value.tel,
+    street: selectedCustomer.value.street,
+    ward: selectedCustomer.value.ward,
   }
-};
+}
 </script>
 
 <template>
@@ -116,7 +112,7 @@ const onCustomerSelect = (event) => {
                       {{ option.tel }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {{ option.street || '' }} {{ option.ward?.label ? '- ' + option.ward.label : '' }}
+                      {{ option.address || '' }}
                     </div>
                   </div>
                 </template>
