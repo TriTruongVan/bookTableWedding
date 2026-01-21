@@ -18,6 +18,8 @@ const props = defineProps({
     type: [Number, String],
   },
 });
+
+const soBan = computed(() => Number(props.soBan || 0));
 const emit = defineEmits(["update:modelValue"]);
 
 const voucherData = computed({
@@ -26,12 +28,14 @@ const voucherData = computed({
 });
 
 const filteredVoucher = computed(() => {
-  if (!props.soBan) return [];
+  const selectedIds = voucherData.value.map(v => v.id);
 
-  return props.voucher.filter(
-    (v) => Number(props.soBan) >= Number(v.conditions.min_tables)
+  return props.voucher.filter(v =>
+    selectedIds.includes(v.id) ||
+    soBan.value >= Number(v.min_tables ?? 0)
   );
 });
+
 
 watch(voucherData, (newVal, oldVal) => {
   if (newVal.length > 2) {
@@ -44,13 +48,6 @@ watch(voucherData, (newVal, oldVal) => {
     });
   }
 });
-
-watch(
-  () => props.soBan,
-  () => {
-    voucherData.value = [];
-  }
-);
 </script>
 
 <template>
@@ -123,6 +120,7 @@ watch(
           placeholder="Chọn voucher ưu đãi"
           :options="filteredVoucher"
           option-label="name"
+          dataKey="id"
           display="chip"
           :show-clear="true"
           filter

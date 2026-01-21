@@ -18,6 +18,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('lunar_day')->nullable();
             $table->unsignedTinyInteger('lunar_month')->nullable();
             $table->unsignedSmallInteger('lunar_year')->nullable();
+            $table->boolean('isLeapMonth')->default(false);
+            $table->string('lunar_can_chi', 20)->nullable();
             $table->enum('session', ['trua', 'chieu']);
             $table->unsignedInteger('table_count')->default(0);
             $table->decimal('deposit_amount', 15, 2)->default(0);

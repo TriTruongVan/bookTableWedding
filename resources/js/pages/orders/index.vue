@@ -29,9 +29,6 @@ const loadOrder = async () =>{
     const respOrder = await getOrders(currentPage.value, pageSize.value, searchQuery.value)
     listOrder.value = respOrder.data.data.data
     total.value = respOrder.data.data.total
-
-    console.log(respOrder);
-    
   } catch (error) {
     toast.add({
       severity: "error",

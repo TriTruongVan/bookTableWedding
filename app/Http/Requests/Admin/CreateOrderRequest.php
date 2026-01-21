@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\admin;
+namespace App\Http\Requests\Admin;
 
 use App\Enums\UserRoles;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,7 +26,7 @@ class CreateOrderRequest extends FormRequest
             'schedule.lunarDay'  => 'nullable|integer|min:1|max:30',
             'schedule.lunarMonth'=> 'nullable|integer|min:1|max:12',
             'schedule.lunarYear' => 'nullable|integer|min:1900|max:2100',
-            'schedule.session'   => ['required', Rule::in(['trưa', 'chiều'])],
+            'schedule.session'   => ['required', Rule::in(['trua', 'chieu'])],
 
             'soBanGia.soBan'   => 'required|integer|min:1|max:1000',
             'soBanGia.donGia'  => 'required|numeric|min:0',
@@ -46,7 +46,7 @@ class CreateOrderRequest extends FormRequest
 
             'staffData'              => 'nullable|array',
             'staffData.*.id'         => 'required|integer|exists:staff,id',
-            'staffData.*.session'    => ['nullable', Rule::in(['trưa', 'chiều'])],
+            'staffData.*.session'    => ['nullable', Rule::in(['trua', 'chieu'])],
         ];
     }
 
