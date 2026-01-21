@@ -70,9 +70,6 @@ const saveUser = async () =>{
     })
     closeEdit()
   } catch (error:any) {
-    console.log('====================================');
-    console.log(error);
-    console.log('====================================');
     toast.add({
       severity: 'error',
       summary: 'Error',

@@ -3,12 +3,14 @@ import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import Paginator from "primevue/paginator";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 const loading = ref(false);
 const currentPage = ref(1)
 const pageSize = ref(20)
 const sortField = ref(null);
 const sortOrder = ref(null);
+const router = useRouter()
 
 const props = defineProps({
   modelValue: {
@@ -31,6 +33,11 @@ const formatDate = (dateString: any) => {
 const formatCurrency = (value: any) => {
   return Number(value || 0).toLocaleString("vi-VN");
 };
+
+const editOrder = (event:any) => {
+  const orderID = event.data.id
+  router.push({name: "OrderDetail", params: {id: orderID}})
+}
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -100,6 +107,7 @@ const getStatusText = (status: string) => {
           :sort-order="sortOrder === 'asc' ? 1 : sortOrder === 'desc' ? -1 : 0"
           :removable-sort="true"
           :value="listOrder"
+          @row-click="editOrder"
         >
           <!-- Mã đơn hàng -->
           <Column field="id" header="MÃ ĐơN" style="min-width: 150px">
@@ -137,16 +145,19 @@ const getStatusText = (status: string) => {
           </Column>
 
           <!-- Ngày tiệc -->
-          <Column field="party_date" header="Ngày tiệc" style="min-width: 140px">
+          <Column field="party_date" header="Ngày tiệc" style="min-width: 180px">
             <template #body="{data}">
               <div class="py-1">
                 <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  {{ data.lunar_date }}
+                  Âm lịch: {{ data.lunar_date }}
+                </p>
+                <p v-if="data.isLeapMonth" class="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                  Tháng nhuận
                 </p>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-0.5">
-                  {{ formatDate(data.event_date) }}
+                  Dương lịch: {{ formatDate(data.event_date) }}
                 </p>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-sm font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">
                   Buổi {{ formatSession(data.session) }}
                 </span>
               </div>
@@ -216,23 +227,33 @@ const getStatusText = (status: string) => {
           </Column>
 
           <!-- Tổng tiền -->
-          <Column field="total" header="TỔNG TIỀN" style="min-width: 140px">
-            <template #body="{data}">
-              <div class="py-2">
-                <div class="text-right">
-                  <p class="text-base font-bold text-emerald-600 dark:text-emerald-400">
-                    {{ formatCurrency(data.total_amount) }}
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    triệu đồng
-                  </p>
-                </div>
+          <Column field="total" header="TỔNG TIỀN" style="min-width: 210px">
+            <template #body="{ data }">
+              <div class="py-2 text-right space-y-0.5">
+                <!-- Số bàn × giá bàn -->
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ data.table_count }} bàn ×
+                  {{ formatCurrency(data.price_per_table) }}
+                </p>
+
+                <!-- Tiền cọc (nếu có) -->
+                <p
+                  v-if="data.deposit_amount && data.deposit_amount > 0"
+                  class="text-xs text-rose-500 dark:text-rose-400"
+                >
+                  Đã cọc: -{{ formatCurrency(data.deposit_amount) }}
+                </p>
+                <!-- Tổng tiền -->
+                <p class="text-base font-bold text-emerald-600 dark:text-emerald-400">
+                  Tổng tiền: {{ formatCurrency(data.total_amount) }}đ
+                </p>
+
               </div>
             </template>
           </Column>
 
           <!-- Trạng thái -->
-          <Column field="status" header="Trạng thái" style="min-width: 110px">
+          <Column field="status" header="Trạng thái" style="min-width: 130px">
             <template #body="{data}">
               <span
                 :class="getStatusColor(data.status)"
@@ -272,9 +293,9 @@ const getStatusText = (status: string) => {
             class="custom-paginator"
           />
         </div>
+        </div>
       </div>
     </div>
-  </div>
 </template>
 
 <style scoped>

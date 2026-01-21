@@ -18,6 +18,42 @@ class VoucherSeeder extends Seeder
         
         $vouchers = [
             [
+                'code' => 'COMBO_1',
+                'name' => 'Đường dẫn lỗi, Chữ T, Thảm dẫn lối',
+                'description' => 'Voucher tặng combo dẫn lối trong ngày cưới.',
+                'conditions' => [
+                    'min_tables' => 50
+                ],
+                'is_active' => 1,
+            ],
+            [
+                'code' => 'DUONG_DAN_LOI',
+                'name' => 'Đường dẫn lỗi',
+                'description' => 'Voucher tặng đường dẫn lối trong ngày cưới.',
+                'conditions' => [
+                    'min_tables' => 50
+                ],
+                'is_active' => 1,
+            ],
+            [
+                'code' => 'THAM_DAN_LOI',
+                'name' => 'Thảm dẫn lỗi',
+                'description' => 'Voucher tặng thảm dẫn lối trong ngày cưới.',
+                'conditions' => [
+                    'min_tables' => 50
+                ],
+                'is_active' => 1,
+            ],
+            [
+                'code' => 'CHU_T',
+                'name' => 'Chữ T',
+                'description' => 'Voucher tặng chữ T trong ngày cưới.',
+                'conditions' => [
+                    'min_tables' => 50
+                ],
+                'is_active' => 1,
+            ],
+            [
                 'code' => 'BACKDROP',
                 'name' => 'Backdrop chụp hình',
                 'description' => 'Voucher tặng backdrop chụp hình cho tiệc cưới, sinh nhật, sự kiện.',
@@ -57,24 +93,6 @@ class VoucherSeeder extends Seeder
                 'code' => 'WEDDING_CAR',
                 'name' => 'Xe đưa đón dâu',
                 'description' => 'Voucher tặng xe đưa đón dâu trong ngày cưới.',
-                'conditions' => [
-                    'min_tables' => 50
-                ],
-                'is_active' => 1,
-            ],
-            [
-                'code' => 'DUONG_DAN_LOI',
-                'name' => 'Đường dẫn lỗi',
-                'description' => 'Voucher tặng đường dẫn lối trong ngày cưới.',
-                'conditions' => [
-                    'min_tables' => 50
-                ],
-                'is_active' => 1,
-            ],
-            [
-                'code' => 'THAM_DAN_LOI',
-                'name' => 'Thảm dẫn lỗi',
-                'description' => 'Voucher tặng thảm dẫn lối trong ngày cưới.',
                 'conditions' => [
                     'min_tables' => 50
                 ],

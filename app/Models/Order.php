@@ -24,6 +24,7 @@ class Order extends Model
         'lunar_day',
         'lunar_month',
         'lunar_year',
+        'isLeapMonth',
         'session',
         'table_count',
         'price_per_table',
@@ -71,11 +72,13 @@ class Order extends Model
 
     public function getLunarDateAttribute(): ?string
     {
-        // Nếu thiếu bất kỳ trường nào thì trả về null hoặc chuỗi rỗng
         if (!$this->lunar_day || !$this->lunar_month || !$this->lunar_year) {
             return null;
         }
-        return "Mồng {$this->lunar_day} Tháng {$this->lunar_month} Năm {$this->lunar_year}";
+
+        $dayPrefix = $this->lunar_day <= 10 ? 'Mồng ' : '';
+
+        return "{$dayPrefix}{$this->lunar_day} Tháng {$this->lunar_month} Năm {$this->lunar_year}";
     }
 
     public function getLunarDateShortAttribute(): ?string
@@ -113,5 +116,10 @@ class Order extends Model
     public function vouchers()
     {
         return $this->belongsToMany(Voucher::class, 'voucher_orders');
+    }
+
+    public function orderAddresses()
+    {
+        return $this->hasOne(OrderAddress::class);
     }
 }

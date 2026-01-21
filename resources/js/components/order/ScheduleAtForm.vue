@@ -11,7 +11,7 @@ const props = defineProps({
       lunarMonth: '',
       lunarYear: '',
       isLeapMonth: false,
-      session: 'trưa'
+      session: ''
     })
   }
 })
@@ -74,6 +74,24 @@ const solarDate = computed(() => {
     return { full: 'Ngày không hợp lệ' }
   }
 })
+
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (!val) return
+
+    selectedLunarDay.value = val.lunarDay ?? 1
+    selectedLunarMonth.value = val.lunarMonth ?? 1
+    isLeapMonth.value = !!val.isLeapMonth
+    session.value = val.session || 'trưa'
+
+    if (val.lunarYear) {
+      const found = canChiYears.find(y => y.year === val.lunarYear)
+      if (found) selectedYear.value = found
+    }
+  },
+  { immediate: true }
+)
 
 watch([() => selectedYear.value, selectedLunarMonth, isLeapMonth], () => {
   try {
@@ -241,14 +259,14 @@ watch(
           <!-- Buổi trưa -->
           <label 
             class="relative flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
-            :class="session === 'trưa' 
+            :class="session === 'trua' 
               ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
               : 'border-gray-200 dark:border-gray-600 hover:border-blue-300'"
           >
             <input 
               type="radio" 
               v-model="session" 
-              value="trưa"
+              value="trua"
               class="w-5 h-5 text-blue-600 focus:ring-blue-500"
             />
             <div class="flex-1">
@@ -260,14 +278,14 @@ watch(
           <!-- Buổi chiều -->
           <label 
             class="relative flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
-            :class="session === 'chiều' 
+            :class="session === 'chieu' 
               ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
               : 'border-gray-200 dark:border-gray-600 hover:border-blue-300'"
           >
             <input 
               type="radio" 
               v-model="session" 
-              value="chiều"
+              value="chieu"
               class="w-5 h-5 text-blue-600 focus:ring-blue-500"
             />
             <div class="flex-1">

@@ -5,7 +5,7 @@ import { computed } from "vue";
 
 const props = defineProps({
   modelValue: {
-    type: Object,
+    type: Array,
     default: () => [],
   },
   dish: {

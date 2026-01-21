@@ -1,33 +1,31 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { onMounted, ref, computed } from "vue";
+import { getOrderById, updateOrder } from "../../../services/orderService";
+import { useRoute, useRouter } from "vue-router";
 import { useToast } from "primevue/usetoast";
-
-// Components
 import CustomerForm from "@/components/order/CustomerForm.vue";
+import { getAllWards } from "../../../services/userService";
 import ServiceForm from "@/components/order/ServiceForm.vue";
-import ScheduleAtForm from "@/components/order/ScheduleAtForm.vue";
+import { getDish } from "../../../services/dishService";
 import TableAndPriceForm from "@/components/order/TableAndPriceForm.vue";
 import NoteForm from "@/components/order/NoteForm.vue";
 import VoucherForm from "@/components/order/VoucherForm.vue";
 import StaffForm from "@/components/order/StaffForm.vue";
-
-import { getAllWards } from "../../../services/userService";
 import { getAllStaff } from "../../../services/staffService";
 import { getAllVouchers } from "../../../services/voucherService";
-import { getDish } from "../../../services/dishService";
-import { createOrder } from "../../../services/orderService";
+import ScheduleAtForm from "@/components/order/ScheduleAtForm.vue";
 
+const route = useRoute();
+const router = useRouter();
 const loading = ref(false);
 const toast = useToast();
-const router = useRouter();
 
 const wards = ref([]);
+const dish = ref([]);
 const staff = ref([]);
 const voucher = ref([]);
-const dish = ref([]);
 
-const orderData = ref({
+const OrderData = ref({
   customer: {
     name: "",
     tel: "",
@@ -38,31 +36,27 @@ const orderData = ref({
     solarDate: null,
     lunarDay: null,
     lunarMonth: null,
-    isLeapMonth:null,
+    isLeapMonth: null,
     lunarYear: "",
-    lunarCanChi:"",
-    session: "trua",
+    lunarCanChi: "",
+    session: "",
   },
   soBanGia: {
-    soBan: "",
-    donGia: "",
+    soBan: 0,
+    donGia: 0,
     tienCoc: 0,
   },
-  dishData: [],
+  dish: [],
+  staff: [],
+  voucher: [],
   note: "",
-  voucherData: [],
-  staffData: [],
 });
 
+// Computed properties
 const tongTien = computed(() => {
-  const soBan = Number(orderData.value.soBanGia.soBan) || 0;
-  const donGia = Number(orderData.value.soBanGia.donGia) || 0;
+  const soBan = Number(OrderData.value.soBanGia.soBan) || 0;
+  const donGia = Number(OrderData.value.soBanGia.donGia) || 0;
   return soBan * donGia;
-});
-
-const canShowVoucher = computed(() => {
-  const soBan = Number(orderData.value.soBanGia.soBan) || 0;
-  return soBan >= 50;
 });
 
 const getWardLabel = (wardId) => {
@@ -71,36 +65,21 @@ const getWardLabel = (wardId) => {
   return found ? found.label : null;
 };
 
-const formatDate = (date) => {
-  if (!date) return null
-  const d = new Date(date)
-  if (isNaN(d.getTime())) {
-    console.error('INVALID DATE:', date)
-    return null
-  }
-
-  return d.toISOString().slice(0, 10)
-}
-
 onMounted(async () => {
-  await Promise.all(
-    [
-      loadWard(), 
-      loadStaff(), 
-      loadVoucher(), 
-      loadDish()
-    ]);
+  await Promise.all([loadStaff(), loadWard(), loadDish()]);
+  await loadVoucher();
+  await loadOrder();
 });
 
-const loadWard = async () => {
+const loadVoucher = async () => {
   try {
-    const resp = await getAllWards();
-    wards.value = resp.data.data.wards;
+    const resp = await getAllVouchers();
+    voucher.value = resp.data.data.items;
   } catch (error) {
     toast.add({
       severity: "error",
       summary: "Lỗi",
-      detail: "Tải danh sách phường thất bại",
+      detail: "Tải voucher thất bại",
       life: 3000,
     });
   }
@@ -120,20 +99,6 @@ const loadStaff = async () => {
   }
 };
 
-const loadVoucher = async () => {
-  try {
-    const resp = await getAllVouchers();
-    voucher.value = resp.data.data.items;
-  } catch (error) {
-    toast.add({
-      severity: "error",
-      summary: "Lỗi",
-      detail: "Tải voucher thất bại",
-      life: 3000,
-    });
-  }
-};
-
 const loadDish = async () => {
   try {
     const resp = await getDish();
@@ -148,77 +113,117 @@ const loadDish = async () => {
   }
 };
 
-// Reset form
-const resetForm = () => {
-  orderData.value = {
-    customer: { name: "", tel: "", street: "", ward: null },
-    schedule: {
-      solarDate: "",
-      lunarDay: null,
-      lunarMonth: null,
-      isLeapMonth:null,
-      lunarYear: "",
-      session: "",
-    },
-    soBanGia: { soBan: "", donGia: "", tienCoc: 0 },
-    dishData: [],
-    note: "",
-    voucherData: [],
-    staffData: [],
-  };
-  toast.add({
-    severity: "info",
-    summary: "Đã làm mới",
-    detail: "Form đã được reset về mặc định",
-    life: 3000,
-  });
+const loadWard = async () => {
+  try {
+    const resp = await getAllWards();
+    wards.value = resp.data.data.wards;
+  } catch (error) {
+    toast.add({
+      severity: "error",
+      summary: "Lỗi",
+      detail: "Tải danh sách phường thất bại",
+      life: 3000,
+    });
+  }
 };
 
-const submitOrder = async () => {
-  loading.value = true
+const loadOrder = async () => {
+  loading.value = true;
+  try {
+    const resp = await getOrderById(route.params.id);
+    const data = resp.data.data;
+
+    OrderData.value.customer = data.customer;
+    OrderData.value.dish = dish.value.filter(d =>
+      data.dishes.some(selected => selected.id === d.id)
+    );
+    OrderData.value.soBanGia = {
+      soBan: data.table_count,
+      donGia: data.price_per_table,
+      tienCoc: data.deposit_amount,
+    };
+    OrderData.value.schedule = {
+      lunarDay: data.schedule?.lunar_day ?? null,
+      lunarMonth: data.schedule?.lunar_month ?? null,
+      lunarYear: data.schedule?.lunar_year ?? null,
+      lunarCanChi: data.lunarCanChi,
+      isLeapMonth: data.schedule?.isLeapMonth,
+      session: data.schedule.session,
+      solarDate: data.event_date,
+    };
+    OrderData.value.note = data.note;
+    OrderData.value.staff = staff.value.filter((s) =>
+      data.staffs.some((o) => o.id === s.id)
+    );
+    OrderData.value.voucher = data.vouchers
+  } catch (error) {
+    toast.add({
+      severity: "error",
+      summary: "Lỗi",
+      detail: "Cập nhật món ăn thất bại",
+      life: 3000,
+    });
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleSubmit = async () => {
+  loading.value = true;
   try {
     const payload = {
-      ...orderData.value,
-      schedule: {
-        ...orderData.value.schedule,
-        solarDate: formatDate(orderData.value.schedule.solarDate),
+      customer: {
+        ...OrderData.value.customer,
+        ward: Number(OrderData.value.customer.ward),
       },
-      dishData: orderData.value.dishData.map(d => ({
-        id: Number(d.id)
-      })),
-      voucherData: orderData.value.voucherData
-      .filter(v => v)
-      .map(v => ({
-        id: typeof v === 'object' ? String(v.id) : String(v)
-      })),
 
-      staffData: orderData.value.staffData.map(s => ({
-        id: Number(s.id),
-        session: s.session
-      })),
-    }
-    await createOrder(payload)
+      schedule: OrderData.value.schedule,
+      soBanGia: OrderData.value.soBanGia,
+      note: OrderData.value.note?.trim() || undefined,
+
+      dishData: OrderData.value.dish.length
+        ? OrderData.value.dish.map((d) => ({ id: Number(d.id) }))
+        : undefined,
+
+      voucherData: OrderData.value.voucher.length
+        ? OrderData.value.voucher.map(v => ({ id: v.id }))
+        : undefined,
+
+
+      staffData: OrderData.value.staff.length
+        ? OrderData.value.staff.map((s) => ({ id: Number(s.id) }))
+        : undefined,
+    };
+    await updateOrder(route.params.id, payload);
     toast.add({
       severity: "success",
       summary: "Thành công",
-      detail: "Đã tạo đơn hàng thành công",
+      detail: "Cập nhật đơn hàng thành công",
       life: 3000,
     });
-    router.push('/orders')
+    router.push("/orders");
   } catch (error) {
     toast.add({
-      severity: 'error',
-      summary: 'Lỗi',
-      detail: error.response?.data?.message || 'Có lỗi xảy ra',
-      life: 3000
-    })
+      severity: "error",
+      summary: "Lỗi",
+      detail: "Không cập nhật được đơn hàng",
+      life: 3000,
+    });
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
+const formatVND = (value) => {
+  const number = Number(value) || 0;
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    minimumFractionDigits: 0,
+  }).format(number);
+};
 
 const sessionLabel = computed(() => {
-  const session = orderData.value.schedule.session;
+  const session = OrderData.value.schedule.session;
 
   const map = {
     trua: "trưa",
@@ -227,13 +232,11 @@ const sessionLabel = computed(() => {
   return map[session] || "Chưa chọn";
 });
 </script>
-
 <template>
   <div
     class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 p-6"
   >
     <div class="max-w-7xl mx-auto">
-      <!-- Header -->
       <div
         class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 mb-6"
       >
@@ -256,19 +259,18 @@ const sessionLabel = computed(() => {
               <h1
                 class="font-bold text-3xl bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent"
               >
-                Tạo đơn hàng Mới
+                Cập nhật đơn hàng
               </h1>
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Nhập thông tin đơn hàng mới vào hệ thống
+                Kiểm tra thông tin đơn hàng vào hệ thống
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Main Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Form Card -->
+        <!-- Form bên trái -->
         <div class="lg:col-span-2">
           <div
             class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
@@ -295,31 +297,29 @@ const sessionLabel = computed(() => {
               </div>
             </div>
 
-            <form class="p-8" @submit.prevent="submitOrder">
+            <form class="p-8" @submit.prevent="handleSubmit">
               <div class="space-y-8">
-                <CustomerForm v-model="orderData.customer" :wards="wards" />
-                <ServiceForm :dish="dish" v-model="orderData.dishData" />
-                <ScheduleAtForm v-model="orderData.schedule" />
-                <TableAndPriceForm v-model="orderData.soBanGia" />
-                <NoteForm v-model="orderData.note" />
+                <CustomerForm v-model="OrderData.customer" :wards="wards" />
+                <ServiceForm v-model="OrderData.dish" :dish="dish" />
+                <ScheduleAtForm v-model="OrderData.schedule" />
+                <TableAndPriceForm v-model="OrderData.soBanGia" />
+                <NoteForm v-model="OrderData.note" />
                 <VoucherForm
-                  v-if="canShowVoucher"
+                  v-model="OrderData.voucher"
                   :voucher="voucher"
-                  v-model="orderData.voucherData"
-                  :soBan="orderData.soBanGia.soBan"
+                  :soBan="OrderData.soBanGia.soBan"
                 />
-                <StaffForm :staff="staff" v-model="orderData.staffData" />
+                <StaffForm v-model="OrderData.staff" :staff="staff" />
 
-                <!-- Action Buttons -->
                 <div
                   class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700"
                 >
                   <button
                     type="button"
-                    @click="resetForm"
+                    @click="router.push('/orders')"
                     class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-all shadow-sm hover:shadow-md"
                   >
-                    <i class="pi pi-refresh mr-2"></i> Làm mới
+                    <i class="pi pi-times mr-2"></i> Huỷ
                   </button>
                   <button
                     type="submit"
@@ -327,7 +327,7 @@ const sessionLabel = computed(() => {
                     class="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
                     <i class="pi pi-check mr-2"></i>
-                    {{ loading ? "Đang tạo..." : "Tạo đơn hàng" }}
+                    {{ loading ? "Đang cập nhật..." : "Cập nhật" }}
                   </button>
                 </div>
               </div>
@@ -335,7 +335,7 @@ const sessionLabel = computed(() => {
           </div>
         </div>
 
-        <!-- Preview Sidebar -->
+        <!-- Preview Sidebar - Giống Create -->
         <div class="lg:col-span-1 space-y-6">
           <div
             class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-6"
@@ -372,16 +372,16 @@ const sessionLabel = computed(() => {
                 </div>
                 <div class="ml-10 space-y-1">
                   <p class="text-sm font-medium text-gray-900 dark:text-white">
-                    {{ orderData.customer.name || "Chưa nhập" }}
+                    {{ OrderData.customer.name || "Chưa nhập" }}
                   </p>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ orderData.customer.tel || "Chưa có SĐT" }}
+                    {{ OrderData.customer.tel || "Chưa có SĐT" }}
                   </p>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ orderData.customer.street || "Chưa có địa chỉ" }}
+                    {{ OrderData.customer.street || "Chưa có địa chỉ" }}
                     {{
-                      orderData.customer.ward
-                        ? "- " + getWardLabel(orderData.customer.ward)
+                      OrderData.customer.ward
+                        ? "- " + getWardLabel(OrderData.customer.ward)
                         : ""
                     }}
                   </p>
@@ -407,14 +407,14 @@ const sessionLabel = computed(() => {
                 <div class="ml-10">
                   <ul class="space-y-1">
                     <li
-                      v-for="d in orderData.dishData"
+                      v-for="d in OrderData.dish"
                       :key="d.id"
                       class="text-sm text-gray-600 dark:text-gray-400"
                     >
                       • {{ d.name }} - {{ d.dish_group_name }}
                     </li>
                     <li
-                      v-if="!orderData.dishData.length"
+                      v-if="!OrderData.dish.length"
                       class="text-sm text-gray-400 italic"
                     >
                       Chưa chọn món
@@ -442,18 +442,20 @@ const sessionLabel = computed(() => {
                 <div class="ml-10 space-y-1">
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     • Lịch âm: Ngày
-                    {{ orderData.schedule.lunarDay || "?" }} tháng
-                    {{ orderData.schedule.lunarMonth || "?" }} năm
-                    {{ orderData.schedule.lunarCanChi || "?" }}
-                    ({{ orderData.schedule.lunarYear || "?" }})
-                    
+                    {{ OrderData.schedule.lunarDay || "?" }} tháng
+                    {{ OrderData.schedule.lunarMonth || "?" }} năm
+                    {{ OrderData.schedule.lunarCanChi || "?" }}
+                    ({{ OrderData.schedule.lunarYear || "?" }})
                   </p>
-                  <p v-if="orderData.schedule.isLeapMonth" class="text-sm text-gray-600 dark:text-gray-400">
+                  <p
+                    v-if="OrderData.schedule.isLeapMonth"
+                    class="text-sm text-gray-600 dark:text-gray-400"
+                  >
                     • Tháng nhuận
                   </p>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     • Lịch dương:
-                    {{ orderData.schedule.solarDate || "Chưa chọn" }}
+                    {{ OrderData.schedule.solarDate || "Chưa chọn" }}
                   </p>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     • Buổi {{ sessionLabel || "Chưa chọn" }}
@@ -481,13 +483,13 @@ const sessionLabel = computed(() => {
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     Số bàn:
                     <span class="font-medium text-gray-900 dark:text-white"
-                      >{{ orderData.soBanGia.soBan || "0" }} bàn</span
+                      >{{ OrderData.soBanGia.soBan || "0" }} bàn</span
                     >
                   </p>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     Đơn giá:
                     <span class="font-medium text-gray-900 dark:text-white"
-                      >{{ (orderData.soBanGia.donGia || 0).toLocaleString() }}đ
+                      >{{ (OrderData.soBanGia.donGia || 0).toLocaleString() }}đ
                       / bàn</span
                     >
                   </p>
@@ -496,7 +498,7 @@ const sessionLabel = computed(() => {
 
               <hr class="border-gray-200 dark:border-gray-700" />
 
-              <!-- Ghi chú -->
+              <!-- Địa điểm tổ chức -->
               <div class="space-y-2">
                 <div class="flex items-center gap-2">
                   <div
@@ -512,7 +514,7 @@ const sessionLabel = computed(() => {
                 </div>
                 <div class="ml-10">
                   <p class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ orderData.note || "Không có ghi chú" }}
+                    {{ OrderData.note || "Không có ghi chú" }}
                   </p>
                 </div>
               </div>
@@ -536,14 +538,14 @@ const sessionLabel = computed(() => {
                 <div class="ml-10">
                   <ul class="space-y-1">
                     <li
-                      v-for="v in orderData.voucherData"
+                      v-for="v in OrderData.voucher"
                       :key="v.id"
                       class="text-sm text-gray-600 dark:text-gray-400"
                     >
                       • {{ v.name }}
                     </li>
                     <li
-                      v-if="!orderData.voucherData.length"
+                      v-if="!OrderData.voucher.length"
                       class="text-sm text-gray-400 italic"
                     >
                       Không áp dụng
@@ -571,14 +573,14 @@ const sessionLabel = computed(() => {
                 <div class="ml-10">
                   <ul class="space-y-1">
                     <li
-                      v-for="s in orderData.staffData"
+                      v-for="s in OrderData.staff"
                       :key="s.id"
                       class="text-sm text-gray-600 dark:text-gray-400"
                     >
                       • {{ s.name }}
                     </li>
                     <li
-                      v-if="!orderData.staffData.length"
+                      v-if="!OrderData.staff.length"
                       class="text-sm text-gray-400 italic"
                     >
                       Chưa chọn nhân viên
@@ -601,7 +603,7 @@ const sessionLabel = computed(() => {
                   <span
                     class="text-xl font-semibold text-gray-900 dark:text-white"
                   >
-                    {{ tongTien.toLocaleString() }} đ
+                    {{ formatVND(tongTien) }}
                   </span>
                 </div>
                 <div class="flex justify-between items-center">
@@ -611,7 +613,7 @@ const sessionLabel = computed(() => {
                   <span
                     class="text-lg font-semibold text-green-600 dark:text-green-400"
                   >
-                    - {{ (orderData.soBanGia.tienCoc || 0).toLocaleString() }} đ
+                    - {{ formatVND(OrderData.soBanGia.tienCoc) }}
                   </span>
                 </div>
                 <hr
@@ -632,10 +634,12 @@ const sessionLabel = computed(() => {
                         class="text-3xl font-bold text-blue-600 dark:text-blue-400"
                       >
                         {{
-                          Math.max(
-                            tongTien - (orderData.soBanGia.tienCoc || 0),
-                            0
-                          ).toLocaleString()
+                          formatVND(
+                            Math.max(
+                              tongTien - (OrderData.soBanGia.tienCoc || 0),
+                              0
+                            )
+                          )
                         }}
                         đ
                       </p>
@@ -643,11 +647,11 @@ const sessionLabel = computed(() => {
                   </div>
                 </div>
                 <div
-                  v-if="orderData.soBanGia.soBan && orderData.soBanGia.donGia"
+                  v-if="OrderData.soBanGia.soBan && OrderData.soBanGia.donGia"
                   class="text-sm text-gray-500 dark:text-gray-400 text-right mt-2"
                 >
-                  {{ orderData.soBanGia.soBan }} bàn ×
-                  {{ (orderData.soBanGia.donGia || 0).toLocaleString() }} đ/bàn
+                  {{ OrderData.soBanGia.soBan }} bàn ×
+                  {{ formatVND(OrderData.soBanGia.donGia) }}/bàn
                 </div>
               </div>
             </div>
