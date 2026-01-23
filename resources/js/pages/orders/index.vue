@@ -140,10 +140,10 @@ const onSearch = () => {
           </div>
         </div>
       </div>
+      <ListOrders
+        :listOrder="listOrder"
+        :total="total"
+      />
     </div>
-    <ListOrders
-      :listOrder="listOrder"
-      :total="total"
-    />
   </div>
 </template>
