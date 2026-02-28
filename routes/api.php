@@ -2,10 +2,9 @@
 
 use App\Http\Controllers\AuthenticatedController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DishController;
 use App\Http\Controllers\orderController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\ServiceGroupController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoucherController;
@@ -70,6 +69,11 @@ Route::middleware(AuthAdminUser::class)->group(function() {
         Route::get('/', 'getOrder')->name('order.getOrder');
         Route::get('/{order}', 'getById')->name('order.getById');
         Route::put('/{order}/update', 'updateOrder')->name('order.update');
+    });
+
+    //dashboard 
+    Route::controller(DashboardController::class)->prefix('dashboard')->group(function(){
+        Route::get('/Dashboard-Summary','getDashboardSummary')->name('dashboard.summary');
     });
     
 });
