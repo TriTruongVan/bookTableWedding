@@ -102,6 +102,7 @@ class orderController extends Controller
     public function getOrder(Request $request)
     {
         $search = $request->search;
+        $staffId = $request->staff_id;
 
         $query = Order::with([
             'vouchers',
@@ -109,6 +110,11 @@ class orderController extends Controller
             'dishes',
             'staffs'
         ]);
+        if ($staffId) {
+            $query->whereHas('staffs', function ($q) use ($staffId) {
+                $q->where('staff_id', $staffId);
+            });
+        }
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%$search%")

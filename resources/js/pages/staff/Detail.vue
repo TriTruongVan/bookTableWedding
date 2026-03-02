@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import Card from 'primevue/card';
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getAllWards } from '../../../services/userService'
+import { getOrders } from "../../../services/orderService";
 import { getStaffById, updateStaff } from '../../../services/staffService';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Paginator from 'primevue/paginator';
 
 const router = useRouter()
 const route = useRoute();
 const loading = ref(false)
 const toast = useToast()
 const wardsList = ref([])
+const listOrder = ref([]);
+const total = ref(0);
+const pageSize = ref(20);
+const currentPage = ref(1);
 const staff = ref({
   name: '',
   tel: '',
@@ -22,10 +29,32 @@ const staff = ref({
 })
 
 onMounted(async () => {
-  await loadStaff()
-  await loadWards()
+  await Promise.all([
+    loadStaff(),
+    loadWards(),
+  ])
+  await loadOrder()
 })
 
+const loadOrder = async () => {
+  loading.value = true 
+  try {
+    const staffId = route.params.id as string;
+
+    const reps = await getOrders(currentPage.value, pageSize.value, '', staffId)
+    listOrder.value = reps.data.data.data
+    total.value = reps.data.data.total;
+  } catch (error) {
+    toast.add({
+      severity: "Error",
+      summary: "Lỗi",
+      detail: "Cập nhật danh sách thất bại",
+      life: 3000,
+    })
+  } finally {
+    loading.value = false
+  }
+}
 const loadWards = async () => {
   loading.value = true
   try {
@@ -50,11 +79,6 @@ const loadWards = async () => {
     loading.value = false
   }
 }
-
-const roleList = ref([
-  { id: "0", label: 'Bếp' },
-  { id: "1", label: 'Phục vụ' }
-])
 
 const handleSubmit = async () => {
   loading.value = true
@@ -105,6 +129,41 @@ const loadStaff = async () => {
     loading.value = false
   }
 }
+const roleList = ref([
+  { id: "0", label: 'Bếp' },
+  { id: "1", label: 'Phục vụ' }
+])
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "san_sang":
+      return "Sẵn sàng";
+    case "ket_thuc":
+      return "Kết thúc";
+    default:
+      return status;
+  }
+};
+
+const editOrder = (event: any) => {
+  const orderID = event.data.id;
+  router.push({ name: "OrderDetail", params: { id: orderID } });
+};
+
+const formatCurrency = (value: any) => {
+  return Number(value || 0).toLocaleString("vi-VN");
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "san_sang":
+      return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800";
+    case "ket_thuc":
+      return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800";
+    default:
+      return "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700";
+  }
+};
 </script>
 
 <template>
@@ -141,7 +200,7 @@ const loadStaff = async () => {
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Form Card -->
         <div class="lg:col-span-2">
-          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-6">
             <!-- Card Header -->
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
               <div class="flex items-center gap-3">
@@ -357,6 +416,163 @@ const loadStaff = async () => {
                   {{ staff.status === "1" ? 'Phục vụ' : staff.status === "0" ? 'Bếp' : '-' }}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <!-- Đặt bàn gần đây -->
+        <div
+          class="lg:col-span-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+        >
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="w-10 h-10 bg-purple-50 dark:bg-purple-900/30 rounded-lg flex items-center justify-center"
+            >
+              <svg
+                class="w-5 h-5 text-purple-600 dark:text-purple-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                Đặt bàn gần đây
+              </h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ total || 0 }} đơn hàng trong hệ thống
+              </p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto px-4 py-2">
+            <DataTable
+              :loading="loading"
+              data-key="id"
+              row-hover
+              selection-mode="single"
+              :value="listOrder"
+              @row-click="editOrder"
+            >
+              <Column field="name" header="KHÁCH HÀNG" style="min-width: 160px">
+                <template #body="{ data }">
+                  <div class="flex items-center gap-4">
+                    <div class="flex-1 min-w-0">
+                      <div
+                        class="font-semibold text-gray-900 dark:text-white text-base mb-1"
+                      >
+                        {{ data.customer.name }}
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </Column>
+              <!-- Ngày tiệc -->
+              <Column
+                field="party_date"
+                header="Ngày tiệc"
+                style="min-width: 10px"
+              >
+                <template #body="{ data }">
+                  <div class="py-1">
+                    <p
+                      class="text-sm font-medium text-gray-900 dark:text-white mb-1"
+                    >
+                      Âm lịch: {{ data.lunar_date }}
+                    </p>
+                  </div>
+                </template>
+              </Column>
+              <!-- Số bàn -->
+              <Column field="table" header="SỐ BÀN" style="min-width: 10px">
+                <template #body="{ data }">
+                  <div class="py-2">
+                    <div
+                      class="inline-flex items-baseline gap-1 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 shadow-sm"
+                    >
+                      <span
+                        class="text-lg font-bold text-amber-700 dark:text-amber-400"
+                      >
+                        {{ data.table_count }}
+                      </span>
+                      <span class="text-sm text-amber-600 dark:text-amber-500">
+                        bàn
+                      </span>
+                    </div>
+                  </div>
+                </template>
+              </Column>
+              <!-- Tổng tiền -->
+              <Column field="total" header="TỔNG TIỀN" style="min-width: 10px">
+                <template #body="{ data }">
+                  <div class="py-2 space-y-0.5">
+                    <!-- Tổng tiền -->
+                    <p
+                      class="text-base font-bold text-emerald-600 dark:text-emerald-400"
+                    >
+                      {{ formatCurrency(data.total_amount) }}đ
+                    </p>
+                  </div>
+                </template>
+              </Column>
+
+              <!-- Trạng thái -->
+              <Column
+                field="status"
+                header="Trạng thái"
+                style="min-width: 130px"
+              >
+                <template #body="{ data }">
+                  <span
+                    :class="getStatusColor(data.status)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full border"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                    {{ getStatusText(data.status) }}
+                  </span>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+
+          <!-- Pagination -->
+          <div
+            class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50"
+          >
+            <div
+              class="flex flex-col sm:flex-row justify-between items-center gap-4"
+            >
+              <div class="text-sm text-gray-600 dark:text-gray-400">
+                Hiển thị
+                <span class="font-semibold text-gray-900 dark:text-white">
+                  {{ (currentPage - 1) * pageSize + 1 }}
+                </span>
+                đến
+                <span class="font-semibold text-gray-900 dark:text-white">
+                  {{ Math.min(currentPage * pageSize, total || 0) }}
+                </span>
+                trong tổng số
+                <span class="font-semibold text-gray-900 dark:text-white">
+                  {{ total || 0 }}
+                </span>
+                đơn hàng
+              </div>
+              <Paginator
+                :rows="pageSize"
+                :total-records="total || 0"
+                :rows-per-page-options="[10, 20, 30, 50, 100]"
+                @page="onPageChange"
+                class="custom-paginator"
+              />
             </div>
           </div>
         </div>

@@ -6,6 +6,7 @@ import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Paginator from "primevue/paginator";
 import { getDashBoardSummary } from "../../../services/dashboardService";
+import { useRouter } from "vue-router";
 
 const loading = ref(false);
 const toast = useToast();
@@ -16,6 +17,7 @@ const currentPage = ref(1);
 const totalCustomer = ref<number>(0);
 const totalRevenue = ref<number>(0);
 const totalTable = ref<number>(0);
+const router = useRouter();
 
 onMounted(async () => {
   await Promise.all([loadDashBoardSummary(), loadOrder()]);
@@ -98,6 +100,11 @@ const getStatusColor = (status: string) => {
     default:
       return "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700";
   }
+};
+
+const editOrder = (event: any) => {
+  const orderID = event.data.id;
+  router.push({ name: "OrderDetail", params: { id: orderID } });
 };
 </script>
 <template>
@@ -328,6 +335,7 @@ const getStatusColor = (status: string) => {
               row-hover
               selection-mode="single"
               :value="listOrder"
+              @row-click="editOrder"
               :sort-field="sortField"
               :sort-order="
                 sortOrder === 'asc' ? 1 : sortOrder === 'desc' ? -1 : 0
