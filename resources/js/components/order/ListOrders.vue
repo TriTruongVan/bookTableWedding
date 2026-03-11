@@ -4,6 +4,7 @@ import DataTable from "primevue/datatable";
 import Paginator from "primevue/paginator";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import BillPreviewModal from "./BillPreviewModal.vue";
 
 const loading = ref(false);
 const currentPage = ref(1);
@@ -11,6 +12,8 @@ const pageSize = ref(20);
 const sortField = ref(null);
 const sortOrder = ref(null);
 const router = useRouter();
+const showBill = ref(false)
+const selectedOrder = ref(null)
 
 const props = defineProps({
   modelValue: {
@@ -71,6 +74,11 @@ const getStatusText = (status: string) => {
       return status;
   }
 };
+
+const inBillQR = (order : any) => {
+  selectedOrder.value = order
+  showBill.value = true
+}
 </script>
 
 <template>
@@ -319,7 +327,25 @@ const getStatusText = (status: string) => {
               </span>
             </template>
           </Column>
+          <Column header="Quét mã QR" style="min-width:120px">
+            <template #body="{ data }">
+              <div class="flex justify-center">
+                <button
+                  class="p-button p-button-sm p-button-success"
+                  @click.stop="inBillQR(data)"
+                >
+                  <i class="pi pi-print"></i>
+                </button>
+              </div>
+            </template>
+          </Column>
         </DataTable>
+        
+        <BillPreviewModal
+          :visible="showBill"
+          :order="selectedOrder"
+          @close="showBill = false"
+        />
       </div>
 
       <!-- Footer with Pagination -->
