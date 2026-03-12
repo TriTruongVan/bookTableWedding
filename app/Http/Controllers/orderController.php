@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\City;
+use App\Enums\OrderStatus;
 use App\Http\Requests\Admin\CreateOrderRequest;
 use App\Http\Requests\Admin\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
@@ -234,5 +235,12 @@ class orderController extends Controller
             ]);
             return $this->badRequestRes();
         }
+    }
+
+    public function updateStatus(Order $order){
+        $order->update([
+            'status' => OrderStatus::KET_THUC
+        ]);
+        return $this->okRes();
     }
 }

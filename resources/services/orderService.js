@@ -27,3 +27,6 @@ export const getOrderById = async (id) => {
 export const updateOrder = async (id, payload) =>{
     return axios.put(route('order.update', id), payload)
 }
+export const updateStatus = async (id) =>{
+    return axios.put(route('order.status', id))
+}

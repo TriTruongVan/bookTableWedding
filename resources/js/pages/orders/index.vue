@@ -143,6 +143,7 @@ const onSearch = () => {
       <ListOrders
         :listOrder="listOrder"
         :total="total"
+        @reload="loadOrder()"
       />
     </div>
   </div>
