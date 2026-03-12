@@ -109,6 +109,12 @@ const router = createRouter({
             component: () => import('../js/pages/orders/Detail.vue'),
             meta: { requiresAuth: true }
         },
+        {
+            path: '/calendar',
+            name: 'Calendar',
+            component: () => import('../js/pages/calendar/index.vue'),
+            meta: { requiresAuth: true }
+        },
     ]
 })
 export default router;

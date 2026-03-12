@@ -22,6 +22,7 @@ const menuItems = [
   { label: 'Mã khuyến mãi', icon: 'heroicons:receipt-percent', route: '/voucher' },
   { label: 'Nhân viên', icon: 'heroicons:user-group', route: '/staff' },
   { label: 'Món ăn', icon: 'heroicons:building-storefront', route: '/dish' },
+  { label: 'Lịch', icon: 'heroicons:calendar', route: '/calendar' },
 ]
 const filteredMenuItems = computed(() =>{
   const showForReportViewer = [
