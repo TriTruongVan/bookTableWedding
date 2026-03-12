@@ -29,6 +29,12 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["reload"])
+
+const reloadOrder = () => {
+  emit('reload')
+}
+
 const formatDate = (dateString: any) => {
   return new Date(dateString).toLocaleDateString("vi-VN");
 };
@@ -334,7 +340,7 @@ const inBillQR = (order : any) => {
                   class="p-button p-button-sm p-button-success"
                   @click.stop="inBillQR(data)"
                 >
-                  <i class="pi pi-print"></i>
+                  <i class="pi pi-qrcode"></i>
                 </button>
               </div>
             </template>
@@ -345,6 +351,7 @@ const inBillQR = (order : any) => {
           :visible="showBill"
           :order="selectedOrder"
           @close="showBill = false"
+          @update="reloadOrder"
         />
       </div>
 

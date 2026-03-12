@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { useToast } from "primevue/usetoast";
+import { computed, onMounted, ref } from "vue";
+import { updateStatus } from "../../../services/orderService";
+import { useRouter } from "vue-router";
+
+const loading = ref(false)
+const toast = useToast()
+const router = useRouter()
 
 const props = defineProps({
   visible: Boolean,
   order: Object,
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close","update"]);
 
 const formatCurrency = (value: any) => {
   return Number(value || 0).toLocaleString("vi-VN");
@@ -21,6 +28,30 @@ const qrLink = computed(() => {
   const content = `Dịch vụ nấu ăn THANH AN HỘI ${props.order?.id}`;
   return `https://img.vietqr.io/image/${bank}-${account}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}&accountName=${encodeURIComponent(name)}`;
 });
+
+const confirmPay = async () => {
+  loading.value = true
+  try {
+    await updateStatus(props.order?.id)
+    toast.add({
+      severity: 'success',
+      summary: "Thành công",
+      detail:"Đã xác nhận thanh toán",
+      life: 3000,
+    })
+    emit('update')
+    emit('close')
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: "Lỗi",
+      detail:"Xác nhận thất bại",
+      life: 3000,
+    })
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
@@ -101,8 +132,9 @@ const qrLink = computed(() => {
         </div>
 
         <!-- Footer -->
-        <div class="modal-footer">
+        <div class="modal-footer gap-2">
           <button class="btn-close-main" @click="emit('close')"><span>Đóng</span></button>
+          <button class="btn-close-main" @click="confirmPay()"><span>Xác nhận thanh toán</span></button>
         </div>
 
         <div class="petal petal-1">❀</div>
