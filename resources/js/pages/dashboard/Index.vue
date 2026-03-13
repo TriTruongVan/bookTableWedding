@@ -5,8 +5,9 @@ import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Paginator from "primevue/paginator";
-import { getDashBoardSummary } from "../../../services/dashboardService";
+import { getDashBoardSummary, getNotiTomorrow } from "../../../services/dashboardService";
 import { useRouter } from "vue-router";
+import { OrderNoti } from "@/types/order";
 
 const loading = ref(false);
 const toast = useToast();
@@ -18,9 +19,13 @@ const totalCustomer = ref<number>(0);
 const totalRevenue = ref<number>(0);
 const totalTable = ref<number>(0);
 const router = useRouter();
+const listNotiTomorrow = ref<OrderNoti[]>([])
+const tomorrowCount = ref(0)
+const weekCount = ref(0)
+const monthCount = ref(0)
 
 onMounted(async () => {
-  await Promise.all([loadDashBoardSummary(), loadOrder()]);
+  await Promise.all([loadDashBoardSummary(), loadNotiTomorrow(), loadOrder()]);
 });
 
 const loadOrder = async () => {
@@ -60,6 +65,50 @@ const loadDashBoardSummary = async () => {
     loading.value = false;
   }
 };
+
+const loadNotiTomorrow = async () => {
+  loading.value = true 
+  try {
+    const resp = await getNotiTomorrow()
+    const data = resp.data.data
+
+    if (data.tomorrow.count > 0) {
+      toast.add({
+        severity: "warn",
+        summary: "Tiệc ngày mai",
+        detail: `Ngày mai có ${data.tomorrow.count} tiệc`,
+        life: 4000
+      })
+    }
+
+    if (data.week > 0) {
+      toast.add({
+        severity: "info",
+        summary: "Tiệc tuần này",
+        detail: `Tuần này có ${data.week} tiệc`,
+        life: 4000
+      })
+    }
+
+    if (data.month > 0) {
+      toast.add({
+        severity: "success",
+        summary: "Tiệc tháng này",
+        detail: `Tháng này có ${data.month} tiệc`,
+        life: 4000
+      })
+    }
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: "Lỗi",
+      detail: "Không load thông báo lịch",
+      life: 3000
+    })
+  } finally {
+    loading.value = false
+  }
+}
 
 const formatDate = (dateString: any) => {
   return new Date(dateString).toLocaleDateString("vi-VN");

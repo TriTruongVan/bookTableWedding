@@ -106,3 +106,11 @@ export interface FeedbackInterface {
   star: number
   note: string
 }
+
+export interface OrderNoti {
+  id: number
+  table_count: number
+  customer?: {
+    name: string
+  }
+}

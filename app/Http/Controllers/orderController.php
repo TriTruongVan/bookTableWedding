@@ -10,6 +10,7 @@ use App\Http\Resources\OrderResource;
 use App\Http\Resources\PaginateResource;
 use App\Models\Customer;
 use App\Models\Order;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -242,5 +243,31 @@ class orderController extends Controller
             'status' => OrderStatus::KET_THUC
         ]);
         return $this->okRes();
+    }
+
+    public function orderTomorrow()
+    {
+        $tomorrow = Carbon::tomorrow();
+        $startWeek = Carbon::now()->startOfWeek();
+        $endWeek = Carbon::now()->endOfWeek();
+
+        $ordersTomorrow = Order::with('customer')
+            ->whereDate('event_date', $tomorrow)
+            ->get();
+
+        $countWeek = Order::whereBetween('event_date', [$startWeek, $endWeek])->count();
+
+        $countMonth = Order::whereMonth('event_date', Carbon::now()->month)
+            ->whereYear('event_date', Carbon::now()->year)
+            ->count();
+
+        return $this->okRes([
+            'tomorrow' => [
+                'count' => $ordersTomorrow->count(),
+                'orders' => $ordersTomorrow
+            ],
+            'week' => $countWeek,
+            'month' => $countMonth
+        ]);
     }
 }
