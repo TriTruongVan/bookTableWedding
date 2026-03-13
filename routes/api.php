@@ -67,6 +67,8 @@ Route::middleware(AuthAdminUser::class)->group(function() {
     Route::controller(orderController::class)->prefix('order')->group(function(){
         Route::post('/create', 'createOrder')->name('order.create');
         Route::get('/', 'getOrder')->name('order.getOrder');
+        Route::get('/tomorrow', 'orderTomorrow')->name('order.tomorrow');
+        
         Route::get('/{order}', 'getById')->name('order.getById');
         Route::put('/{order}/update', 'updateOrder')->name('order.update');
         Route::put('/{order}/finish', 'updateStatus')->name('order.status');
