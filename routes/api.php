@@ -70,6 +70,7 @@ Route::middleware(AuthAdminUser::class)->group(function() {
         Route::get('/tomorrow', 'orderTomorrow')->name('order.tomorrow');
         
         Route::get('/{order}', 'getById')->name('order.getById');
+        Route::get('/{order}/pdf', 'exportPdf')->name('order.exportPdf');
         Route::put('/{order}/update', 'updateOrder')->name('order.update');
         Route::put('/{order}/finish', 'updateStatus')->name('order.status');
     });
