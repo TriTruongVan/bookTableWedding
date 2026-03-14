@@ -63,9 +63,3 @@ Tools
 
 ---
 
-## ⚙️ Installation
-
-Clone project
-
-```bash
-git clone https://github.com/your-username/project-name.git
