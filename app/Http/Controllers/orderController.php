@@ -10,6 +10,7 @@ use App\Http\Resources\OrderResource;
 use App\Http\Resources\PaginateResource;
 use App\Models\Customer;
 use App\Models\Order;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -269,5 +270,13 @@ class orderController extends Controller
             'week' => $countWeek,
             'month' => $countMonth
         ]);
+    }
+
+    public function exportPdf($order)
+    {
+        $order = Order::with(['customer','dishes','staffs'])->findOrFail($order);
+        $pdf = Pdf::loadView('pdf.order', compact('order'));
+        
+        return $pdf->download('order-'.$order->id.'.pdf');
     }
 }

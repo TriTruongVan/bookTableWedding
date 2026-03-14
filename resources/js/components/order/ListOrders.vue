@@ -5,6 +5,8 @@ import Paginator from "primevue/paginator";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import BillPreviewModal from "./BillPreviewModal.vue";
+import { useToast } from "primevue/usetoast";
+import { exportPDF } from "../../../services/orderService";
 
 const loading = ref(false);
 const currentPage = ref(1);
@@ -14,6 +16,7 @@ const sortOrder = ref(null);
 const router = useRouter();
 const showBill = ref(false)
 const selectedOrder = ref(null)
+const toast = useToast()
 
 const props = defineProps({
   modelValue: {
@@ -84,6 +87,37 @@ const getStatusText = (status: string) => {
 const inBillQR = (order : any) => {
   selectedOrder.value = order
   showBill.value = true
+}
+
+const xuatPDF = async (order : any) => {
+  loading.value = true
+  try {
+    const response = await exportPDF(order.id)
+
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+
+    link.href = url
+    link.setAttribute('download', `order-${order.id}.pdf`)
+
+    document.body.appendChild(link)
+    link.click()
+    toast.add({
+      severity: 'success',
+      summary: "Thành công",
+      detail: 'Xuất PDF thành công',
+      life: 3000
+    })
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      summary: "Lỗi",
+      detail: 'Xuất PDF không thành công',
+      life: 3000
+    })
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -333,14 +367,22 @@ const inBillQR = (order : any) => {
               </span>
             </template>
           </Column>
-          <Column header="Quét mã QR" style="min-width:120px">
+
+          <!-- Chức năng -->
+          <Column header="Chức năng" style="min-width:120px">
             <template #body="{ data }">
-              <div class="flex justify-center">
+              <div class="flex justify-center gap-2">
                 <button
                   class="p-button p-button-sm p-button-success"
                   @click.stop="inBillQR(data)"
                 >
                   <i class="pi pi-qrcode"></i>
+                </button>
+                <button
+                  class="p-button p-button-sm p-button-success"
+                  @click.stop="xuatPDF(data)"
+                >
+                  <i class="pi pi-file-pdf"></i>
                 </button>
               </div>
             </template>

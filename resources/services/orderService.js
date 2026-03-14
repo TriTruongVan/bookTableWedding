@@ -30,3 +30,9 @@ export const updateOrder = async (id, payload) =>{
 export const updateStatus = async (id) =>{
     return axios.put(route('order.status', id))
 }
+
+export const exportPDF = async (id) =>{
+  return axios.get(route('order.exportPdf', id), {
+    responseType: 'blob'
+  })
+}
